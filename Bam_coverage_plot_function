@@ -1,0 +1,63 @@
+plotcoverage = function(TE_name, TE_library_path, bam_path){
+  .unlist <- function (x){
+    ## do.call(c, ...) coerces factor to integer, which is undesired
+    x1 <- x[[1L]]
+    if (is.factor(x1)){
+      structure(unlist(x), class = "factor", levels = levels(x1))
+    } else {
+      do.call(c, x)
+    }
+  }
+  bam_to_df <- function(path){
+    bam <- scanBam(path)
+    bam_field <- names(bam[[1]])
+    list_bam <- lapply(bam_field, function(y) .unlist(lapply(bam, "[[", y)))
+    bam_df <- do.call("DataFrame", list_bam)
+    names(bam_df) <- bam_field
+    bam_df <- data.frame(bam_df)
+    return(bam_df)
+  }
+  TE_library = readDNAStringSet(TE_library_path)
+  TE_length = TE_library[TE_library@ranges@NAMES == TE_name,]@ranges@width
+  TE_coverage = data.frame(position = c(1:TE_length), sense = 0, antisense = 0)
+  intervals = bam_to_df(bam_path)
+  print('Bam file successfully downloaded. Number of hits:')
+  print(nrow(intervals))
+  intervals = intervals[intervals$rname == TE_name,]
+  for (i in 1:nrow(intervals)){
+    if (intervals$strand[i] == '+'){
+      TE_coverage$sense[c(intervals$pos[i]:intervals$pos[i]+intervals$qwidth[i]-1)] =
+        TE_coverage$sense[c(intervals$pos[i]:intervals$pos[i]+intervals$qwidth[i]-1)] + 1
+    }
+    else {
+      TE_coverage$antisense[c(intervals$pos[i]:intervals$pos[i]+intervals$qwidth[i]-1)] =
+        TE_coverage$antisense[c(intervals$pos[i]:intervals$pos[i]+intervals$qwidth[i]-1)] + 1
+    }
+  if ((i %% 1000) == 0){
+    print(paste(100*i/nrow(intervals), 'percent done'))
+  }
+  }
+  
+  TE_coverage_melted = data.frame(position = rep(TE_coverage$position, 2), reads = c(TE_coverage$sense,
+                                                                                     TE_coverage$antisense),
+                                  label = c(rep('sense', nrow(TE_coverage)),
+                                            rep('antisense', nrow(TE_coverage))))
+  TE_coverage_melted$reads = TE_coverage_melted$reads / sum(TE_coverage_melted$reads)
+  TE_coverage_melted$reads[TE_coverage_melted$label == 'antisense'] = -1 * TE_coverage_melted$reads[TE_coverage_melted$label == 'antisense']
+  
+  plot = ggplot(data = TE_coverage_melted, aes(x = position, y= reads, col = label)) + 
+    geom_line() + 
+    theme_bw() + 
+    scale_color_manual(values = c("deepskyblue2", "tomato")) +
+    ggtitle(TE_name) +
+    xlab('Genomic coordinate') +
+    ylab('Scaled coverage') +
+    labs(col = 'Strand:')
+  return(plot)
+}
+
+#example
+plotcoverage('Acol_gypsy_Ele87#LTR/Gypsy',
+             '~/Anopheles/reference/TE_base/TE_library_josefa.fasta',
+             '~/Anopheles_part2/piRNA_and_siRNA/flag_4_V3/male_head_rep1_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.V3.ALL_ALIGNED_TE_JOSEFAAND_NO.sam.V3_to_TE.bam'
+             )
