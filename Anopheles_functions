@@ -1,0 +1,3006 @@
+setwd('~/Anopheles_part3/')
+annotation = rtracklayer::import('VectorBase-55_AgambiaePEST.gff')
+genome = readDNAStringSet('VectorBase-55_AgambiaePEST_Genome.fasta')
+genome@ranges@NAMES = unlist(lapply(strsplit(genome@ranges@NAMES, ' '), function(x)x[1]))
+annotation$sequence = getSeq(genome, annotation)
+
+
+View(as.data.frame(mRNA))
+mRNA = annotation[annotation$type == 'mRNA']$sequence
+names(mRNA) = annotation[annotation$type == 'mRNA']$ID
+writeXStringSet(mRNA, '~/Anopheles_part4/mRNA_Agambie.fasta')
+
+tRNA = annotation[annotation$type == 'tRNA']$sequence
+names(tRNA) = annotation[annotation$type == 'tRNA']$ID
+writeXStringSet(tRNA, '~/Anopheles_part3/tRNA.fasta')
+
+rRNA = annotation[annotation$type == 'rRNA']$sequence
+names(rRNA) = annotation[annotation$type == 'rRNA']$ID
+writeXStringSet(rRNA, '~/Anopheles_part3/rRNA.fasta')
+
+snRNA = annotation[annotation$type == 'snRNA']$sequence
+names(snRNA) = annotation[annotation$type == 'snRNA']$ID
+writeXStringSet(snRNA, '~/Anopheles_part3/snRNA.fasta')
+
+snoRNA = annotation[annotation$type == 'snoRNA']$sequence
+names(snoRNA) = annotation[annotation$type == 'snoRNA']$ID
+writeXStringSet(snoRNA, '~/Anopheles_part3/snoRNA.fasta')
+
+
+table(annotation$type)
+
+ncRNA = annotation[annotation$type == 'ncRNA_gene',]
+View(as.data.frame(table(ncRNA$description)))
+ncRNA = ncRNA[ncRNA$description %in% c('Eukaryotic large subunit ribosomal RNA [Source:RFAM;Acc:RF02543]',
+                                       'Eukaryotic small subunit ribosomal RNA [Source:RFAM;Acc:RF01960]',
+                                       '5S ribosomal RNA [Source:RFAM;Acc:RF00001]',
+                                       '5.8S ribosomal RNA [Source:RFAM;Acc:RF00002]',
+                                       'U6atac minor spliceosomal RNA [Source:RFAM;Acc:RF00619]',
+                                       'U2 spliceosomal RNA [Source:RFAM;Acc:RF00004]',
+                                       'U1 spliceosomal RNA [Source:RFAM;Acc:RF00003]',
+                                       'U5 spliceosomal RNA [Source:RFAM;Acc:RF00020]',
+                                       'U6 spliceosomal RNA [Source:RFAM;Acc:RF00026]',
+                                       'Arthropod 7SK RNA [Source:RFAM;Acc:RF01052]',
+                                       'Metazoan signal recognition particle RNA [Source:RFAM;Acc:RF00017]',
+                                       'Small nucleolar RNA U3 [Source:RFAM;Acc:RF00012]',
+                                       'U4 spliceosomal RNA [Source:RFAM;Acc:RF00015]',
+                                       'U11 spliceosomal RNA [Source:RFAM;Acc:RF00548]',
+                                       'U12 minor spliceosomal RNA [Source:RFAM;Acc:RF00007]',
+                                       'U4atac minor spliceosomal RNA [Source:RFAM;Acc:RF00618]',
+                                       'tRNA-Gly for anticodon UCC'),]$sequence
+names(ncRNA) = ncRNA[ncRNA$description %in% c('Eukaryotic large subunit ribosomal RNA [Source:RFAM;Acc:RF02543]',
+                                              'Eukaryotic small subunit ribosomal RNA [Source:RFAM;Acc:RF01960]',
+                                              '5S ribosomal RNA [Source:RFAM;Acc:RF00001]',
+                                              '5.8S ribosomal RNA [Source:RFAM;Acc:RF00002]',
+                                              'U6atac minor spliceosomal RNA [Source:RFAM;Acc:RF00619]',
+                                              'U2 spliceosomal RNA [Source:RFAM;Acc:RF00004]',
+                                              'U1 spliceosomal RNA [Source:RFAM;Acc:RF00003]',
+                                              'U5 spliceosomal RNA [Source:RFAM;Acc:RF00020]',
+                                              'U6 spliceosomal RNA [Source:RFAM;Acc:RF00026]',
+                                              'Arthropod 7SK RNA [Source:RFAM;Acc:RF01052]',
+                                              'Metazoan signal recognition particle RNA [Source:RFAM;Acc:RF00017]',
+                                              'Small nucleolar RNA U3 [Source:RFAM;Acc:RF00012]',
+                                              'U4 spliceosomal RNA [Source:RFAM;Acc:RF00015]',
+                                              'U11 spliceosomal RNA [Source:RFAM;Acc:RF00548]',
+                                              'U12 minor spliceosomal RNA [Source:RFAM;Acc:RF00007]',
+                                              'U4atac minor spliceosomal RNA [Source:RFAM;Acc:RF00618]',
+                                              'tRNA-Gly for anticodon UCC'),]$ID
+writeXStringSet(ncRNA, '~/Anopheles_part3/ncRNAs.fasta')
+
+
+miRNA = annotation[annotation$type == 'pre_miRNA',]$sequence
+names(miRNA) = annotation[annotation$type == 'pre_miRNA']$ID
+writeXStringSet(miRNA, '~/Anopheles_part3/premiRNA.fasta')
+
+miRNA_ncRNA = ncRNA[ncRNA$description %in% c('microRNA mir-252 [Source:RFAM;Acc:RF00838]',
+                                             'microRNA mir-276 [Source:RFAM;Acc:RF00637]',
+                                             'microRNA mir-279 [Source:RFAM;Acc:RF00754]',
+                                             'microRNA mir-286 [Source:RFAM;Acc:RF00789]',
+                                             'microRNA mir-3 [Source:RFAM;Acc:RF00716]',
+                                             'microRNA mir-33 [Source:RFAM;Acc:RF00667]',
+                                             'microRNA mir-598 [Source:RFAM;Acc:RF01059]',
+                                             'microRNA mir-71 [Source:RFAM;Acc:RF00832]',
+                                             'microRNA mir-932 [Source:RFAM;Acc:RF01914]',
+                                             'microRNA mir-999 [Source:RFAM;Acc:RF01943]',
+                                             'mir-2 microRNA precursor [Source:RFAM;Acc:RF00047]'
+                                            ),]$sequence
+
+names(miRNA_ncRNA) = ncRNA[ncRNA$description %in% c('microRNA mir-252 [Source:RFAM;Acc:RF00838]',
+                                                    'microRNA mir-276 [Source:RFAM;Acc:RF00637]',
+                                                    'microRNA mir-279 [Source:RFAM;Acc:RF00754]',
+                                                    'microRNA mir-286 [Source:RFAM;Acc:RF00789]',
+                                                    'microRNA mir-3 [Source:RFAM;Acc:RF00716]',
+                                                    'microRNA mir-33 [Source:RFAM;Acc:RF00667]',
+                                                    'microRNA mir-598 [Source:RFAM;Acc:RF01059]',
+                                                    'microRNA mir-71 [Source:RFAM;Acc:RF00832]',
+                                                    'microRNA mir-932 [Source:RFAM;Acc:RF01914]',
+                                                    'microRNA mir-999 [Source:RFAM;Acc:RF01943]',
+                                                    'mir-2 microRNA precursor [Source:RFAM;Acc:RF00047]'
+),]$ID
+
+writeXStringSet(miRNA_ncRNA, '~/Anopheles_part3/miRNA_ncRNA.fasta')
+
+
+setwd('~/Anopheles_part3/miRNA_base_dir/')
+two = as.data.frame(readDNAStringSet('hairpin_aga_database.fasta'))
+four = as.data.frame(readDNAStringSet('hairpin.fa'))
+six = as.data.frame(readDNAStringSet('premiRNA.fasta'))
+
+
+
+table(six$x %in% c(two$x))
+
+View(as.data.frame(two[two$x %in% six$x,]))
+
+
+base = unique(c(two$x, six$x))
+base = DNAStringSet(base)
+length(base)
+base@ranges@NAMES = as.character(1:183)
+writeXStringSet(base, '~/Anopheles_part3/miRNA_base_dir/merged_base')
+
+######################################################
+
+
+#length distribution, alignments:
+library("viridis")           
+
+
+align_distribution_plot = function(initial_dist,
+                                   aligned_to_xRNA,
+                                   aligned_miRNA,
+                                   gg_title){
+  initial = read.table(initial_dist)
+  if (nrow(initial) == 19){
+    if (identical(initial$V1, c(16:34))){
+      initial_upd = initial
+    }
+    else{
+      print('Really?')
+    }}
+    else{
+      initial_upd = data.frame(V1 = c(16:34),
+                               V2 = NA)
+      initial_upd$V2 = initial[match(initial_upd$V1, initial$V1),]$V2
+      initial_upd$V2 = ifelse(is.na(initial_upd$V2), 0, initial_upd$V2)
+    }
+  
+  xRNA = read.table(aligned_to_xRNA)
+  if (nrow(xRNA) == 19){
+    if (identical(xRNA$V2, c(16:34))){
+     xRNA_upd = xRNA
+    }
+    else{
+      print('Really?')
+    }}
+  else{
+    xRNA_upd = data.frame(V2 = c(16:34),
+                             V1 = NA)
+    xRNA_upd$V1 = xRNA[match(xRNA_upd$V2, xRNA$V2),]$V1
+    xRNA_upd$V1 = ifelse(is.na(xRNA_upd$V1), 0, xRNA_upd$V1)
+  }
+  
+  miRNA = read.table(aligned_miRNA)
+  if (nrow(miRNA) == 19){
+    if (identical(miRNA$V2, c(16:34))){
+      miRNA_upd = miRNA
+    }
+    else{
+      print('Really?')
+    }}
+  else{
+    miRNA_upd = data.frame(V2 = c(16:34),
+                          V1 = NA)
+    miRNA_upd$V1 = miRNA[match(miRNA_upd$V2, miRNA$V2),]$V1
+    miRNA_upd$V1 = ifelse(is.na(miRNA_upd$V1), 0, miRNA_upd$V1)
+  }
+  
+  df = data.frame(length = rep(initial_upd$V1, 3), 
+  count = c(xRNA_upd$V1, miRNA_upd$V1, initial_upd$V2 - xRNA_upd$V1 - miRNA_upd$V1),
+  small_RNA_type = c(rep('rRNA, tRNA, snRNA, snoRNA', 19), rep('miRNA', 19), rep('Other small RNAs', 19)))
+  
+  normalization_coeff = sum(initial_upd$V2)
+  df$count = df$count * 1000000/ normalization_coeff
+  
+  plot = ggplot(data = df, aes(x = length, y = count, fill = small_RNA_type)) + 
+    geom_bar(stat = "identity") + 
+    theme_bw() +
+    xlab('small RNA length') + 
+    ylab('Count, RPM') + 
+    ggtitle(gg_title) + 
+    theme(text = element_text(size = 15), legend.position = "none") +
+    scale_x_continuous(breaks = c(16, 18, 20, 22, 24, 26, 28, 30, 32, 34)) + 
+    labs(fill = 'Small RNA type:') +
+    scale_fill_manual(values = c('rRNA, tRNA, snRNA, snoRNA' = "deepskyblue2", 'miRNA' = "seagreen3", 
+                                 'Other small RNAs' = "tomato"))
+  return(plot)
+}
+
+align_distribution_plot_legend = function(initial_dist,
+                                          aligned_to_xRNA,
+                                          aligned_miRNA,
+                                          gg_title){
+  initial = read.table(initial_dist)
+  if (nrow(initial) == 19){
+    if (identical(initial$V1, c(16:34))){
+      initial_upd = initial
+    }
+    else{
+      print('Really?')
+    }}
+  else{
+    initial_upd = data.frame(V1 = c(16:34),
+                             V2 = NA)
+    initial_upd$V2 = initial[match(initial_upd$V1, initial$V1),]$V2
+    initial_upd$V2 = ifelse(is.na(initial_upd$V2), 0, initial_upd$V2)
+  }
+  
+  xRNA = read.table(aligned_to_xRNA)
+  if (nrow(xRNA) == 19){
+    if (identical(xRNA$V2, c(16:34))){
+      xRNA_upd = xRNA
+    }
+    else{
+      print('Really?')
+    }}
+  else{
+    xRNA_upd = data.frame(V2 = c(16:34),
+                          V1 = NA)
+    xRNA_upd$V1 = xRNA[match(xRNA_upd$V2, xRNA$V2),]$V1
+    xRNA_upd$V1 = ifelse(is.na(xRNA_upd$V1), 0, xRNA_upd$V1)
+  }
+  
+  miRNA = read.table(aligned_miRNA)
+  if (nrow(miRNA) == 19){
+    if (identical(miRNA$V2, c(16:34))){
+      miRNA_upd = miRNA
+    }
+    else{
+      print('Really?')
+    }}
+  else{
+    miRNA_upd = data.frame(V2 = c(16:34),
+                           V1 = NA)
+    miRNA_upd$V1 = miRNA[match(miRNA_upd$V2, miRNA$V2),]$V1
+    miRNA_upd$V1 = ifelse(is.na(miRNA_upd$V1), 0, miRNA_upd$V1)
+  }
+  
+  df = data.frame(length = rep(initial_upd$V1, 3), 
+                  count = c(xRNA_upd$V1, miRNA_upd$V1, initial_upd$V2 - xRNA_upd$V1 - miRNA_upd$V1),
+                  small_RNA_type = c(rep('rRNA, tRNA, snRNA, snoRNA', 19), rep('miRNA', 19), rep('Other small RNAs', 19)))
+  
+  normalization_coeff = sum(initial_upd$V2)
+  df$count = df$count * 1000000/ normalization_coeff
+  
+  plot = ggplot(data = df, aes(x = length, y = count, fill = small_RNA_type)) + 
+    geom_bar(stat = "identity") + 
+    theme_bw() +
+    xlab('small RNA length') + 
+    ylab('Count, RPM') + 
+    ggtitle(gg_title) + 
+    theme(text = element_text(size = 15), legend.position = "right") +
+    scale_x_continuous(breaks = c(16, 18, 20, 22, 24, 26, 28, 30, 32, 34)) + 
+    labs(fill = 'Small RNA type:') +
+    scale_fill_manual(values = c('rRNA, tRNA, snRNA, snoRNA' = "deepskyblue2", 'miRNA' = "seagreen3", 
+                                 'Other small RNAs' = "tomato"))
+  return(plot)
+}
+
+extract_legend <- function(my_ggp) {
+  step1 <- ggplot_gtable(ggplot_build(my_ggp))
+  step2 <- which(sapply(step1$grobs, function(x) x$name) == "guide-box")
+  step3 <- step1$grobs[[step2]]
+  return(step3)
+}
+  
+setwd('~/Anopheles_part3/')
+
+mh1 = align_distribution_plot('trimmed_libs/male_head_rep1_trimmed.fastq.len_distribution',
+                        'align_to_xBase/F4_flag/male_head_rep1_trimmed.fastq.sam.flagF4.bam.fasta.length_distribution',
+                        'align_not_xRNA_to_miRNA/F4_flag/male_head_rep1_trimmed.fastq.sam.flagf4.bam.fasta.sam.flagF4.bam.fasta.length_distribution',
+                        'Male head rep1'
+                        )
+
+mh2 = align_distribution_plot('trimmed_libs/male_head_rep2_trimmed.fastq.len_distribution',
+                              'align_to_xBase/F4_flag/male_head_rep2_trimmed.fastq.sam.flagF4.bam.fasta.length_distribution',
+                              'align_not_xRNA_to_miRNA/F4_flag/male_head_rep2_trimmed.fastq.sam.flagf4.bam.fasta.sam.flagF4.bam.fasta.length_distribution',
+                              'Male head rep2'
+                              )
+
+mh3 = align_distribution_plot('trimmed_libs/male_head_rep3_trimmed.fastq.len_distribution',
+                                     'align_to_xBase/F4_flag/male_head_rep3_trimmed.fastq.sam.flagF4.bam.fasta.length_distribution',
+                                     'align_not_xRNA_to_miRNA/F4_flag/male_head_rep3_trimmed.fastq.sam.flagf4.bam.fasta.sam.flagF4.bam.fasta.length_distribution',
+                                     'Male head rep3')
+
+ggp1_legend = align_distribution_plot_legend('trimmed_libs/male_head_rep3_trimmed.fastq.len_distribution',
+                                             'align_to_xBase/F4_flag/male_head_rep3_trimmed.fastq.sam.flagF4.bam.fasta.length_distribution',
+                                             'align_not_xRNA_to_miRNA/F4_flag/male_head_rep3_trimmed.fastq.sam.flagf4.bam.fasta.sam.flagF4.bam.fasta.length_distribution',
+                                             'Male head rep3')
+
+shared_legend <- extract_legend(ggp1_legend)
+
+
+
+mt1 = align_distribution_plot('trimmed_libs/male_thorax_rep1_trimmed.fastq.len_distribution',
+                              'align_to_xBase/F4_flag/male_thorax_rep1_trimmed.fastq.sam.flagF4.bam.fasta.length_distribution',
+                              'align_not_xRNA_to_miRNA/F4_flag/male_thorax_rep1_trimmed.fastq.sam.flagf4.bam.fasta.sam.flagF4.bam.fasta.length_distribution',
+                              'Male thorax rep1'
+                              )
+
+mt2 = align_distribution_plot('trimmed_libs/male_thorax_rep2_trimmed.fastq.len_distribution',
+                              'align_to_xBase/F4_flag/male_thorax_rep2_trimmed.fastq.sam.flagF4.bam.fasta.length_distribution',
+                              'align_not_xRNA_to_miRNA/F4_flag/male_thorax_rep2_trimmed.fastq.sam.flagf4.bam.fasta.sam.flagF4.bam.fasta.length_distribution',
+                              'Male thorax rep2')
+
+mt3 = align_distribution_plot('trimmed_libs/male_thorax_rep3_trimmed.fastq.len_distribution',
+                              'align_to_xBase/F4_flag/male_thorax_rep3_trimmed.fastq.sam.flagF4.bam.fasta.length_distribution',
+                              'align_not_xRNA_to_miRNA/F4_flag/male_thorax_rep3_trimmed.fastq.sam.flagf4.bam.fasta.sam.flagF4.bam.fasta.length_distribution',
+                              'Male thorax rep3')
+
+
+fh1 = align_distribution_plot('trimmed_libs/female_head_rep1_trimmed.fastq.len_distribution',
+                              'align_to_xBase/F4_flag/female_head_rep1_trimmed.fastq.sam.flagF4.bam.fasta.length_distribution',
+                              'align_not_xRNA_to_miRNA/F4_flag/female_head_rep1_trimmed.fastq.sam.flagf4.bam.fasta.sam.flagF4.bam.fasta.length_distribution',
+                              'Female head rep1'
+                              )
+
+fh2 = align_distribution_plot('trimmed_libs/female_head_rep2_trimmed.fastq.len_distribution',
+                              'align_to_xBase/F4_flag/female_head_rep2_trimmed.fastq.sam.flagF4.bam.fasta.length_distribution',
+                              'align_not_xRNA_to_miRNA/F4_flag/female_head_rep2_trimmed.fastq.sam.flagf4.bam.fasta.sam.flagF4.bam.fasta.length_distribution',
+                              'Female head rep2'
+)
+
+fh3 = align_distribution_plot('trimmed_libs/female_head_rep3_trimmed.fastq.len_distribution',
+                              'align_to_xBase/F4_flag/female_head_rep3_trimmed.fastq.sam.flagF4.bam.fasta.length_distribution',
+                              'align_not_xRNA_to_miRNA/F4_flag/female_head_rep3_trimmed.fastq.sam.flagf4.bam.fasta.sam.flagF4.bam.fasta.length_distribution',
+                              'Female head rep3'
+)
+
+
+ft1 = align_distribution_plot('trimmed_libs/female_thorax_rep1_trimmed.fastq.len_distribution',
+                              'align_to_xBase/F4_flag/female_thorax_rep1_trimmed.fastq.sam.flagF4.bam.fasta.length_distribution',
+                              'align_not_xRNA_to_miRNA/F4_flag/female_thorax_rep1_trimmed.fastq.sam.flagf4.bam.fasta.sam.flagF4.bam.fasta.length_distribution',
+                              'Female thorax rep1'
+                              )
+
+ft2 = align_distribution_plot('trimmed_libs/female_thorax_rep2_trimmed.fastq.len_distribution',
+                              'align_to_xBase/F4_flag/female_thorax_rep2_trimmed.fastq.sam.flagF4.bam.fasta.length_distribution',
+                              'align_not_xRNA_to_miRNA/F4_flag/female_thorax_rep2_trimmed.fastq.sam.flagf4.bam.fasta.sam.flagF4.bam.fasta.length_distribution',
+                              'Female thorax rep2'
+)
+
+ft3 = align_distribution_plot('trimmed_libs/female_thorax_rep3_trimmed.fastq.len_distribution',
+                              'align_to_xBase/F4_flag/female_thorax_rep3_trimmed.fastq.sam.flagF4.bam.fasta.length_distribution',
+                              'align_not_xRNA_to_miRNA/F4_flag/female_thorax_rep3_trimmed.fastq.sam.flagf4.bam.fasta.sam.flagF4.bam.fasta.length_distribution',
+                              'Female thorax rep3'
+)
+
+
+
+library(gridExtra)
+gridExtra::grid.arrange(arrangeGrob(mh1, mh2, mh3, mt1, mt2, mt3, fh1, fh2, fh3, ft1, ft2, ft3, ncol = 3),
+                        shared_legend,
+                        nrow = 2,
+                        widths = c(10, 4), heights = c(15, 0.2))
+
+
+#####################################
+
+
+
+
+
+
+
+
+##########Ele87_TE_body_coverage:
+
+
+
+plotcoverage = function(TE_name, TE_library_path, bam_path){
+  .unlist <- function (x){
+    ## do.call(c, ...) coerces factor to integer, which is undesired
+    x1 <- x[[1L]]
+    if (is.factor(x1)){
+      structure(unlist(x), class = "factor", levels = levels(x1))
+    } else {
+      do.call(c, x)
+    }
+  }
+  bam_to_df <- function(path){
+    bam <- scanBam(path)
+    bam_field <- names(bam[[1]])
+    list_bam <- lapply(bam_field, function(y) .unlist(lapply(bam, "[[", y)))
+    bam_df <- do.call("DataFrame", list_bam)
+    names(bam_df) <- bam_field
+    bam_df <- data.frame(bam_df)
+    return(bam_df)
+  }
+  TE_library = readDNAStringSet(TE_library_path)
+  TE_length = TE_library[TE_library@ranges@NAMES == TE_name,]@ranges@width
+  TE_coverage = data.frame(position = c(1:TE_length), sense = 0, antisense = 0)
+  intervals = bam_to_df(bam_path)
+  print('Bam file successfully downloaded. Number of hits at all:')
+  print(nrow(intervals))
+  intervals = intervals[intervals$rname == TE_name,]
+  print('Bam file successfully downloaded. Number of hits:')
+  print(nrow(intervals))
+  for (i in 1:nrow(intervals)){
+    if (intervals$strand[i] == '+'){
+      TE_coverage$sense[c(intervals$pos[i]:intervals$pos[i]+intervals$qwidth[i]-1)] =
+        TE_coverage$sense[c(intervals$pos[i]:intervals$pos[i]+intervals$qwidth[i]-1)] + 1
+    }
+    else {
+      TE_coverage$antisense[c(intervals$pos[i]:intervals$pos[i]+intervals$qwidth[i]-1)] =
+        TE_coverage$antisense[c(intervals$pos[i]:intervals$pos[i]+intervals$qwidth[i]-1)] + 1
+    }
+    if ((i %% 1000) == 0){
+      print(paste(100*i/nrow(intervals), 'percent done'))
+    }
+  }
+  
+  TE_coverage_melted = data.frame(position = rep(TE_coverage$position, 2), reads = c(TE_coverage$sense,
+                                                                                     TE_coverage$antisense),
+                                  label = c(rep('sense', nrow(TE_coverage)),
+                                            rep('antisense', nrow(TE_coverage))))
+  TE_coverage_melted$reads = TE_coverage_melted$reads * 1000000 / nrow(intervals)
+  TE_coverage_melted$reads[TE_coverage_melted$label == 'antisense'] = -1 * TE_coverage_melted$reads[TE_coverage_melted$label == 'antisense']
+  
+  plot = ggplot(data = TE_coverage_melted, aes(x = position, y= reads, col = label)) + 
+    geom_line() + 
+    theme_classic() + 
+    scale_color_manual(values = c("deepskyblue2", "tomato")) +
+    ggtitle(TE_name) +
+    xlab('Genomic coordinate') +
+    ylab('Scaled coverage, RPM') +
+    labs(col = 'Strand:')
+  return(plot)
+}
+
+
+
+TE_base = readDNAStringSet('~/Anopheles/reference/TE_base/TE_library_josefa.fasta')
+TEs = data.frame(name = unlist(lapply(strsplit(TE_base@ranges@NAMES, '#'), function(x)x[1])),
+                 width = TE_base@ranges@width)
+
+col = read.table('~/Anopheles_part3/Masker/AcolMOP1_genome.fasta.out', fill = T)
+col = col[c(3:136647),]
+col = na.omit(col)
+col$TE_length = TEs[match(col$V10, TEs$name),]$width
+
+col$percent = (as.numeric(as.character(col$V7)) - as.numeric(as.character(col$V6)))/col$TE_length
+col = col[col$percent >= 0.8,]
+
+col = col[as.character(col$V5) == 'CM029348.1',]
+col = col[as.numeric(as.character(col$V6)) >= 46050060,]
+col = col[as.numeric(as.character(col$V7)) <= 46051060,]
+
+nrow(col)
+
+
+
+#overlap genome alignment with 1mm , RM and annotation:
+
+setwd('~/Anopheles_part3/align_others_sRNA_to_GENOME_ACOL_V1/')
+
+.unlist <- function (x){
+  ## do.call(c, ...) coerces factor to integer, which is undesired
+  x1 <- x[[1L]]
+  if (is.factor(x1)){
+    structure(unlist(x), class = "factor", levels = levels(x1))
+  } else {
+    do.call(c, x)
+  }
+}
+bam_to_df <- function(path){
+  bam <- scanBam(path)
+  bam_field <- names(bam[[1]])
+  list_bam <- lapply(bam_field, function(y) .unlist(lapply(bam, "[[", y)))
+  bam_df <- do.call("DataFrame", list_bam)
+  names(bam_df) <- bam_field
+  bam_df <- data.frame(bam_df)
+  return(bam_df)
+}
+
+ft3 = bam_to_df('F4_flag/female_thorax_rep3_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.flagF4.bam')
+ft3$region = paste(ft3$rname, ft3$strand, ft3$pos, ft3$qwidth)
+View(as.data.frame(table(ft3$region)))
+
+#ggseqlogo, piRNA this region:
+
+ggplot() + geom_logo(ft3[ft3$region == 'CM029348.1 + 46050660 18',]$seq) + theme_logo()
+
+
+smallRNA = ggplot() + geom_logo('CGTACGGTTTAAACTTCG') + theme_logo() + ggtitle('small RNA libs')
+TE = ggplot() + geom_logo('GGTACGGCTTAAACTTGG') + theme_logo() + ggtitle('Acol_gypsy_Ele87#LTR/Gypsy, RC fragment')
+genome = ggplot() + geom_logo('CGTACGGTTTAAACTCCG') + theme_logo() + ggtitle('Genomic loci: CM029348.1:46050660-46050677')
+
+gridExtra::grid.arrange(smallRNA, TE, genome)
+
+
+annotation = rtracklayer::import('~/Anopheles_part3/Acol_genome/AcolMOP1_annotation.gtf')
+
+
+###########################################################
+####к каким транспозонам идут оставшиеся РНК, для каждого баес, пинг понг, фейзинг.
+#length distribution visualization:
+
+setwd('~/Anopheles_part3/COMPARE_ME/align_to_Ele87/flag_f_4/')
+
+initial_dist = function(ld_path, name){
+  file = read.table(ld_path)
+  plot = ggplot(data = file, aes(x = V2, y = V1)) +
+    geom_bar(stat = 'identity') + 
+    theme_bw() +
+    xlab('small RNA length') + 
+    ylab('Number of reads') + 
+    ggtitle(name) +
+    theme(text = element_text(size = 15), legend.position = "none") +
+    scale_x_continuous(breaks = c(16, 18, 20, 22, 24, 26, 28, 30, 32, 34))
+  
+  return(plot)
+}
+
+
+mh1 = initial_dist('male_head_rep1_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.length_distribution',
+             'Male head rep1')
+mh2 = initial_dist('male_head_rep2_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.length_distribution',
+                   'Male head rep2')
+mh3 = initial_dist('male_head_rep3_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.length_distribution',
+                   'Male head rep3')
+mt1 = initial_dist('male_thorax_rep1_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.length_distribution',
+                   'Male thorax rep1')
+mt2 = initial_dist('male_thorax_rep2_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.length_distribution',
+                   'Male thorax rep2')
+mt3 = initial_dist('male_thorax_rep3_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.length_distribution',
+                   'Male thorax rep3')
+fh1 = initial_dist('female_head_rep1_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.length_distribution',
+                   'Female head rep1')
+fh2 = initial_dist('female_head_rep2_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.length_distribution',
+                   'Female head rep2')
+fh3 = initial_dist('female_head_rep3_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.length_distribution',
+                   'Female head rep3')
+ft1 = initial_dist('female_thorax_rep1_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.length_distribution',
+                   'Female thorax rep1')
+ft2 = initial_dist('female_thorax_rep2_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.length_distribution',
+                   'Female thorax rep2')
+ft3 = initial_dist('female_thorax_rep3_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.length_distribution',
+                   'Female thorax rep3')
+
+
+gridExtra::grid.arrange(mh1, mh2, mh3, mt1, mt2, mt3, fh1, fh2, fh3, ft1, ft2, ft3,
+                        nrow = 4)
+
+
+
+##############################The most interesting part
+
+
+setwd('~/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/')
+
+.unlist <- function (x){
+  ## do.call(c, ...) coerces factor to integer, which is undesired
+  x1 <- x[[1L]]
+  if (is.factor(x1)){
+    structure(unlist(x), class = "factor", levels = levels(x1))
+  } else {
+    do.call(c, x)
+  }
+}
+bam_to_df <- function(path){
+  bam <- scanBam(path)
+  bam_field <- names(bam[[1]])
+  list_bam <- lapply(bam_field, function(y) .unlist(lapply(bam, "[[", y)))
+  bam_df <- do.call("DataFrame", list_bam)
+  names(bam_df) <- bam_field
+  bam_df <- data.frame(bam_df)
+  return(bam_df)
+}
+
+male_head_1 = bam_to_df('male_head_rep1_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.sam.flagF4.bam')
+male_head_1_table = as.data.frame(table(male_head_1$rname))
+male_head_1_table$Freq = male_head_1_table$Freq * 1000000 / nrow(male_head_1)
+male_head_1_table = male_head_1_table[order(male_head_1_table$Var1),]
+
+male_head_2 = bam_to_df('male_head_rep2_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.sam.flagF4.bam')
+male_head_2_table = as.data.frame(table(male_head_2$rname))
+male_head_2_table$Freq = male_head_2_table$Freq * 1000000 / nrow(male_head_2)
+male_head_2_table = male_head_2_table[order(male_head_2_table$Var1),]
+
+male_head_3 = bam_to_df('male_head_rep3_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.sam.flagF4.bam')
+male_head_3_table = as.data.frame(table(male_head_3$rname))
+male_head_3_table$Freq = male_head_3_table$Freq * 1000000 / nrow(male_head_3)
+male_head_3_table = male_head_3_table[order(male_head_3_table$Var1),]
+
+male_thorax_1 = bam_to_df('male_thorax_rep1_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.sam.flagF4.bam')
+male_thorax_1_table = as.data.frame(table(male_thorax_1$rname))
+male_thorax_1_table$Freq = male_thorax_1_table$Freq * 1000000 / nrow(male_thorax_1)
+male_thorax_1_table = male_thorax_1_table[order(male_thorax_1_table$Var1),]
+
+male_thorax_2 = bam_to_df('male_thorax_rep2_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.sam.flagF4.bam')
+male_thorax_2_table = as.data.frame(table(male_thorax_2$rname))
+male_thorax_2_table$Freq = male_thorax_2_table$Freq * 1000000 / nrow(male_thorax_2)
+male_thorax_2_table = male_thorax_2_table[order(male_thorax_2_table$Var1),]
+
+male_thorax_3 = bam_to_df('male_thorax_rep3_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.sam.flagF4.bam')
+male_thorax_3_table = as.data.frame(table(male_thorax_3$rname))
+male_thorax_3_table$Freq = male_thorax_3_table$Freq * 1000000 / nrow(male_thorax_3)
+male_thorax_3_table = male_thorax_3_table[order(male_thorax_3_table$Var1),]
+
+female_head_1 = bam_to_df('female_head_rep1_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.sam.flagF4.bam')
+female_head_1_table = as.data.frame(table(female_head_1$rname))
+female_head_1_table$Freq = female_head_1_table$Freq * 1000000 / nrow(female_head_1)
+female_head_1_table = female_head_1_table[order(female_head_1_table$Var1),]
+
+female_head_2 = bam_to_df('female_head_rep2_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.sam.flagF4.bam')
+female_head_2_table = as.data.frame(table(female_head_2$rname))
+female_head_2_table$Freq = female_head_2_table$Freq * 1000000 / nrow(female_head_2)
+female_head_2_table = female_head_2_table[order(female_head_2_table$Var1),]
+
+female_head_3 = bam_to_df('female_head_rep3_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.sam.flagF4.bam')
+female_head_3_table = as.data.frame(table(female_head_3$rname))
+female_head_3_table$Freq = female_head_3_table$Freq * 1000000 / nrow(female_head_3)
+female_head_3_table = female_head_3_table[order(female_head_3_table$Var1),]
+
+female_thorax_1 = bam_to_df('female_thorax_rep1_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.sam.flagF4.bam')
+female_thorax_1_table = as.data.frame(table(female_thorax_1$rname))
+female_thorax_1_table$Freq = female_thorax_1_table$Freq * 1000000 / nrow(female_thorax_1)
+female_thorax_1_table = female_thorax_1_table[order(female_thorax_1_table$Var1),]
+
+female_thorax_2 = bam_to_df('female_thorax_rep2_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.sam.flagF4.bam')
+female_thorax_2_table = as.data.frame(table(female_thorax_2$rname))
+female_thorax_2_table$Freq = female_thorax_2_table$Freq * 1000000 / nrow(female_thorax_2)
+female_thorax_2_table = female_thorax_2_table[order(female_thorax_2_table$Var1),]
+
+female_thorax_3 = bam_to_df('female_thorax_rep3_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.sam.flagF4.bam')
+female_thorax_3_table = as.data.frame(table(female_thorax_3$rname))
+female_thorax_3_table$Freq = female_thorax_3_table$Freq * 1000000 / nrow(female_thorax_3)
+female_thorax_3_table = female_thorax_3_table[order(female_thorax_3_table$Var1),]
+
+
+
+#heatmap all TEs, RPM:
+
+summary_all = data.frame(
+  male_head_1 = male_head_1_table$Freq,
+  male_head_2 = male_head_2_table$Freq,
+  male_head_3 = male_head_3_table$Freq,
+  female_head_1 = female_head_1_table$Freq,
+  female_head_2 = female_head_2_table$Freq,
+  female_head_3 = female_head_3_table$Freq,
+  male_thorax_1 = male_thorax_1_table$Freq,
+  male_thorax_2 = male_thorax_2_table$Freq,
+  male_thorax_3 = male_thorax_3_table$Freq,
+  female_thorax_1 = female_thorax_1_table$Freq,
+  female_thorax_2 = female_thorax_2_table$Freq,
+  female_thorax_3 = female_thorax_3_table$Freq
+)
+
+rownames(summary_all) = male_head_1_table$Var1
+
+summary_all$max_value = apply(summary_all, 1, max)
+summary_all = summary_all[summary_all$max_value > 10000,]
+summary_all$max_value = NULL
+
+pheatmap(log2(summary_all), scale = 'none')
+
+TE_names = rownames(summary_all)
+
+
+
+#COVERAGE_FOR_ALL
+#for each of 146 TE 12 rows, 3 columns
+
+plotcoverage_upd = function(TE_name, TE_library_path, bam_path){
+    .unlist <- function (x){
+      ## do.call(c, ...) coerces factor to integer, which is undesired
+      x1 <- x[[1L]]
+      if (is.factor(x1)){
+        structure(unlist(x), class = "factor", levels = levels(x1))
+      } else {
+        do.call(c, x)
+      }
+    }
+    bam_to_df <- function(path){
+      bam <- scanBam(path)
+      bam_field <- names(bam[[1]])
+      list_bam <- lapply(bam_field, function(y) .unlist(lapply(bam, "[[", y)))
+      bam_df <- do.call("DataFrame", list_bam)
+      names(bam_df) <- bam_field
+      bam_df <- data.frame(bam_df)
+      return(bam_df)
+    }
+    TE_library = readDNAStringSet(TE_library_path)
+    TE_length = TE_library[TE_library@ranges@NAMES == TE_name,]@ranges@width
+    TE_coverage = data.frame(position = c(1:TE_length), sense = 0, antisense = 0)
+    intervals = bam_to_df(bam_path)
+    print('Bam file successfully downloaded. Number of hits at all:')
+    print(nrow(intervals))
+    intervals = intervals[intervals$rname == TE_name,]
+    print('Bam file successfully downloaded. Number of hits:')
+    print(nrow(intervals))
+    if (nrow(intervals) == 0){
+      plot = ggplot()
+      return(plot)
+    }
+    
+    for (i in 1:nrow(intervals)){
+      if (intervals$strand[i] == '+'){
+        TE_coverage$sense[c(intervals$pos[i]:intervals$pos[i]+intervals$qwidth[i]-1)] =
+          TE_coverage$sense[c(intervals$pos[i]:intervals$pos[i]+intervals$qwidth[i]-1)] + 1
+      }
+      else {
+        TE_coverage$antisense[c(intervals$pos[i]:intervals$pos[i]+intervals$qwidth[i]-1)] =
+          TE_coverage$antisense[c(intervals$pos[i]:intervals$pos[i]+intervals$qwidth[i]-1)] + 1
+      }
+      if ((i %% 1000) == 0){
+        print(paste(100*i/nrow(intervals), 'percent done'))
+      }
+    }
+    
+    TE_coverage_melted = data.frame(position = rep(TE_coverage$position, 2), reads = c(TE_coverage$sense,
+                                                                                       TE_coverage$antisense),
+                                    label = c(rep('sense', nrow(TE_coverage)),
+                                              rep('antisense', nrow(TE_coverage))))
+    TE_coverage_melted$reads = TE_coverage_melted$reads * 1000000 / nrow(intervals)
+    TE_coverage_melted$reads[TE_coverage_melted$label == 'antisense'] = -1 * TE_coverage_melted$reads[TE_coverage_melted$label == 'antisense']
+    
+    plot = ggplot(data = TE_coverage_melted, aes(x = position, y= reads, col = label)) + 
+      geom_line() + 
+      theme_classic() + 
+      scale_color_manual(values = c("deepskyblue2", "tomato")) +
+      ggtitle(TE_name) +
+      xlab('Genomic coordinate') +
+      ylab('Scaled coverage, RPM') +
+      labs(col = 'Strand:')
+    return(plot)
+}
+plot_signature = function(TE_name, TE_library_path, fasta_path){
+  setwd('/mnt/raid/pro_milka/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/ALL_THIS_STUFF/')
+  base = readDNAStringSet(TE_library_path)
+  TE = base[base@ranges@NAMES == TE_name]
+  writeXStringSet(TE, '/mnt/raid/pro_milka/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/ALL_THIS_STUFF/TE.fasta')
+  system(paste('bowtie-build /mnt/raid/pro_milka/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/ALL_THIS_STUFF/TE.fasta TE;
+         bowtie -f ', fasta_path, ' -v 0 --threads 64 --index /mnt/raid/pro_milka/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/ALL_THIS_STUFF/TE --sam > /mnt/raid/pro_milka/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/ALL_THIS_STUFF/align_without_flag.sam;
+         samtools view -h -F 4 /mnt/raid/pro_milka/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/ALL_THIS_STUFF/align_without_flag.sam > /mnt/raid/pro_milka/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/ALL_THIS_STUFF/result.sam;
+         python3 ~/soft/signature.py /mnt/raid/pro_milka/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/ALL_THIS_STUFF/result.sam 1 35 1 35 answer', sep =''), intern = F)
+  df = read.table('answer', header = TRUE)
+ system('rm /mnt/raid/pro_milka/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/ALL_THIS_STUFF/*', intern = F)
+  plot = ggplot(data = df, aes(x = overlap, y = z.score, fill = overlap_prob)) +
+    theme_classic() +
+    geom_bar(stat = 'identity') +
+    xlab('Overlap') +
+    ylab('Z-score') +
+    theme(text = element_text(size = 15), legend.position = "none")
+  return(plot)
+}
+#the same bam as in plot coverage
+plot_bias = function(TE_name, bam_path){
+  bam_to_df <- function(path){
+    bam <- scanBam(path)
+    bam_field <- names(bam[[1]])
+    list_bam <- lapply(bam_field, function(y) .unlist(lapply(bam, "[[", y)))
+    bam_df <- do.call("DataFrame", list_bam)
+    names(bam_df) <- bam_field
+    bam_df <- data.frame(bam_df)
+    return(bam_df)
+  }
+  
+  take_ten = function(DNAstring){
+    rez = paste(unlist(strsplit(as.character(DNAstring),''))[1:10],collapse="")
+    return(rez) 
+  }
+  
+  intervals = bam_to_df(bam_path)
+  print('Bam file successfully downloaded. Number of hits at all:')
+  print(nrow(intervals))
+  intervals = intervals[intervals$rname == TE_name,]
+  print('Bam file successfully downloaded. Number of hits:')
+  print(nrow(intervals))
+  if (nrow(intervals) == 0){
+    plot = ggplot()
+    return(plot)
+  }
+  intervals_plus = intervals[intervals$strand == '+',]
+  intervals_minus = intervals[intervals$strand == '-',]
+  
+  if (nrow(intervals_plus) == 0){
+    plus = ggplot() + theme_void()
+  } else{
+
+  intervals_plus$ten_letters = as.character(lapply(intervals_plus$seq, take_ten))
+  plus = ggplot() + geom_logo(intervals_plus$ten_letters) + theme_logo() + ggtitle('+ strand')
+  }
+  
+  if (nrow(intervals_minus) == 0){
+    minus = ggplot() + theme_void()
+  }
+  else{
+  intervals_minus$ten_letters = as.character(lapply(intervals_minus$seq, take_ten))
+  minus = ggplot() + geom_logo(intervals_minus$ten_letters) + theme_logo() + ggtitle('- strand')
+  }
+  
+  result = grid.arrange(plus, minus, nrow = 2)
+  return(result)
+}
+
+
+for (i in 1:length(TE_names)){
+
+  coverage = plotcoverage_upd(TE_names[i],'~/Anopheles_part3/TE_Josefa/TE_library_josefa.fasta',
+  '/mnt/raid/pro_milka/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/female_head_rep1_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.sam.flagF4.bam')
+  signature = plot_signature(TE_names[i], '~/Anopheles_part3/TE_Josefa/TE_library_josefa.fasta',
+                             '~/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/female_head_rep1_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.sam.flagF4.bam.fasta')
+  bias = plot_bias(TE_names[i], 
+   '/mnt/raid/pro_milka/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/female_head_rep1_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.sam.flagF4.bam')
+  
+  fh1 = arrangeGrob(coverage, signature, bias, nrow = 1, top = 'Female head 1')
+  
+  #
+  
+  coverage = plotcoverage_upd(TE_names[i],'~/Anopheles_part3/TE_Josefa/TE_library_josefa.fasta',
+                              '/mnt/raid/pro_milka/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/female_head_rep2_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.sam.flagF4.bam')
+  signature = plot_signature(TE_names[i], '~/Anopheles_part3/TE_Josefa/TE_library_josefa.fasta',
+                             '~/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/female_head_rep2_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.sam.flagF4.bam.fasta')
+  bias = plot_bias(TE_names[i], 
+                   '/mnt/raid/pro_milka/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/female_head_rep2_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.sam.flagF4.bam')
+  
+  fh2 = arrangeGrob(coverage, signature, bias, nrow = 1, top = 'Female head 2')
+  #
+  
+  coverage = plotcoverage_upd(TE_names[i],'~/Anopheles_part3/TE_Josefa/TE_library_josefa.fasta',
+                              '/mnt/raid/pro_milka/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/female_head_rep3_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.sam.flagF4.bam')
+  signature = plot_signature(TE_names[i], '~/Anopheles_part3/TE_Josefa/TE_library_josefa.fasta',
+                             '~/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/female_head_rep3_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.sam.flagF4.bam.fasta')
+  bias = plot_bias(TE_names[i], 
+                   '/mnt/raid/pro_milka/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/female_head_rep3_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.sam.flagF4.bam')
+  
+  fh3 = arrangeGrob(coverage, signature, bias, nrow = 1, top = 'Female head 3')
+  
+  #
+  
+  coverage = plotcoverage_upd(TE_names[i],'~/Anopheles_part3/TE_Josefa/TE_library_josefa.fasta',
+                              '/mnt/raid/pro_milka/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/female_thorax_rep1_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.sam.flagF4.bam')
+  signature = plot_signature(TE_names[i], '~/Anopheles_part3/TE_Josefa/TE_library_josefa.fasta',
+                             '~/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/female_thorax_rep1_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.sam.flagF4.bam.fasta')
+  bias = plot_bias(TE_names[i], 
+                   '/mnt/raid/pro_milka/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/female_thorax_rep1_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.sam.flagF4.bam')
+  
+  ft1 = arrangeGrob(coverage, signature, bias, nrow = 1, top = 'Female thorax 1')
+  
+  #
+  
+  coverage = plotcoverage_upd(TE_names[i],'~/Anopheles_part3/TE_Josefa/TE_library_josefa.fasta',
+                              '/mnt/raid/pro_milka/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/female_thorax_rep2_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.sam.flagF4.bam')
+  signature = plot_signature(TE_names[i], '~/Anopheles_part3/TE_Josefa/TE_library_josefa.fasta',
+                             '~/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/female_thorax_rep2_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.sam.flagF4.bam.fasta')
+  bias = plot_bias(TE_names[i], 
+                   '/mnt/raid/pro_milka/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/female_thorax_rep2_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.sam.flagF4.bam')
+  
+  ft2 = arrangeGrob(coverage, signature, bias, nrow = 1, top = 'Female thorax 2')
+  #
+  
+  coverage = plotcoverage_upd(TE_names[i],'~/Anopheles_part3/TE_Josefa/TE_library_josefa.fasta',
+                              '/mnt/raid/pro_milka/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/female_thorax_rep3_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.sam.flagF4.bam')
+  signature = plot_signature(TE_names[i], '~/Anopheles_part3/TE_Josefa/TE_library_josefa.fasta',
+                             '~/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/female_thorax_rep3_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.sam.flagF4.bam.fasta')
+  bias = plot_bias(TE_names[i], 
+                   '/mnt/raid/pro_milka/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/female_thorax_rep3_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.sam.flagF4.bam')
+  
+  ft3 = arrangeGrob(coverage, signature, bias, nrow = 1, top = 'Female thorax 3')
+  #
+  
+  coverage = plotcoverage_upd(TE_names[i],'~/Anopheles_part3/TE_Josefa/TE_library_josefa.fasta',
+                              '/mnt/raid/pro_milka/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/male_head_rep1_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.sam.flagF4.bam')
+  signature = plot_signature(TE_names[i], '~/Anopheles_part3/TE_Josefa/TE_library_josefa.fasta',
+                             '~/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/male_head_rep1_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.sam.flagF4.bam.fasta')
+  bias = plot_bias(TE_names[i], 
+                   '/mnt/raid/pro_milka/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/male_head_rep1_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.sam.flagF4.bam')
+  
+  mh1 = arrangeGrob(coverage, signature, bias, nrow = 1, top = 'Male head 1')
+  #
+  
+  coverage = plotcoverage_upd(TE_names[i],'~/Anopheles_part3/TE_Josefa/TE_library_josefa.fasta',
+                              '/mnt/raid/pro_milka/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/male_head_rep2_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.sam.flagF4.bam')
+  signature = plot_signature(TE_names[i], '~/Anopheles_part3/TE_Josefa/TE_library_josefa.fasta',
+                             '~/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/male_head_rep2_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.sam.flagF4.bam.fasta')
+  bias = plot_bias(TE_names[i], 
+                   '/mnt/raid/pro_milka/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/male_head_rep2_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.sam.flagF4.bam')
+  
+  mh2 = arrangeGrob(coverage, signature, bias, nrow = 1, top = 'Male head 2')
+  #
+  
+  coverage = plotcoverage_upd(TE_names[i],'~/Anopheles_part3/TE_Josefa/TE_library_josefa.fasta',
+                              '/mnt/raid/pro_milka/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/male_head_rep3_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.sam.flagF4.bam')
+  signature = plot_signature(TE_names[i], '~/Anopheles_part3/TE_Josefa/TE_library_josefa.fasta',
+                             '~/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/male_head_rep3_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.sam.flagF4.bam.fasta')
+  bias = plot_bias(TE_names[i], 
+                   '/mnt/raid/pro_milka/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/male_head_rep3_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.sam.flagF4.bam')
+  
+  mh3 = arrangeGrob(coverage, signature, bias, nrow = 1, top = 'Male head 3')
+  #
+  coverage = plotcoverage_upd(TE_names[i],'~/Anopheles_part3/TE_Josefa/TE_library_josefa.fasta',
+                              '/mnt/raid/pro_milka/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/male_thorax_rep1_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.sam.flagF4.bam')
+  signature = plot_signature(TE_names[i], '~/Anopheles_part3/TE_Josefa/TE_library_josefa.fasta',
+                             '~/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/male_thorax_rep1_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.sam.flagF4.bam.fasta')
+  bias = plot_bias(TE_names[i], 
+                   '/mnt/raid/pro_milka/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/male_thorax_rep1_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.sam.flagF4.bam')
+  
+  mt1 = arrangeGrob(coverage, signature, bias, nrow = 1, top = 'Male thorax 1')
+  
+  #
+  coverage = plotcoverage_upd(TE_names[i],'~/Anopheles_part3/TE_Josefa/TE_library_josefa.fasta',
+                              '/mnt/raid/pro_milka/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/male_thorax_rep2_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.sam.flagF4.bam')
+  signature = plot_signature(TE_names[i], '~/Anopheles_part3/TE_Josefa/TE_library_josefa.fasta',
+                             '~/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/male_thorax_rep2_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.sam.flagF4.bam.fasta')
+  bias = plot_bias(TE_names[i], 
+                   '/mnt/raid/pro_milka/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/male_thorax_rep2_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.sam.flagF4.bam')
+  
+  mt2 = arrangeGrob(coverage, signature, bias, nrow = 1, top = 'Male thorax 2')
+  #
+  coverage = plotcoverage_upd(TE_names[i],'~/Anopheles_part3/TE_Josefa/TE_library_josefa.fasta',
+                              '/mnt/raid/pro_milka/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/male_thorax_rep3_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.sam.flagF4.bam')
+  signature = plot_signature(TE_names[i], '~/Anopheles_part3/TE_Josefa/TE_library_josefa.fasta',
+                             '~/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/male_thorax_rep3_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.sam.flagF4.bam.fasta')
+  bias = plot_bias(TE_names[i], 
+                   '/mnt/raid/pro_milka/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/male_thorax_rep3_trimmed.fastq.sam.flagf4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.sam.flagF4.bam')
+  
+  mt3 = arrangeGrob(coverage, signature, bias, nrow = 1, top = 'Male thorax 3')
+  
+  
+  #
+  
+  g = grid.arrange(fh1, fh2, fh3, ft1, ft2, ft3, mh1, mh2, mh3, mt1, mt2, mt3, nrow = 12)
+  
+  setwd('~/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/pic/')
+  ggsave(paste(unlist(lapply(strsplit(TE_names[i], '#'), function(x)x[1])),'.pdf',sep=''), width = 25, height = 80, units = "cm", g)
+}
+
+
+
+a = plotcoverage_upd('Paris_full#DNA/TcMar-Tc1',
+                       '~/TE_bases/44_TE/dvir_full-size_TEs.fasta',
+                       '~/2021_year/Kelleher/piRNA_F2_to_genome_160/trimmed_smallRNA_data/SRR2096072_trimmed.fqF4.bam')
+
+b = plot_signature('Paris_full#DNA/TcMar-Tc1',
+               '~/TE_bases/44_TE/dvir_full-size_TEs.fasta', 
+               '~/2021_year/Kelleher/piRNA_F2_to_genome_160/trimmed_smallRNA_data/fasta_debug.fasta')
+c = plot_bias('Paris_full#DNA/TcMar-Tc1',
+          '~/2021_year/Kelleher/piRNA_F2_to_genome_160/trimmed_smallRNA_data/SRR2096072_trimmed.fqF4.bam')
+
+
+l = grid.arrange(a, b, c, nrow = 1)
+setwd('~/')
+ggsave('PLOT.pdf', width = 25, height = 7, units = "cm", l)
+
+
+
+
+
+
+###############miRNA 20
+
+library("viridis")           
+
+align_distribution_plot = function(not_aligned,
+                                   aligned_lncRNA,
+                                   gg_title){
+  initial = read.table(not_aligned)
+  if (nrow(initial) == 19){
+    if (identical(initial$V2, c(16:34))){
+      initial_upd = initial
+    }
+    else{
+      print('Really?')
+    }}
+  else{
+    initial_upd = data.frame(V2 = c(16:34),
+                             V1 = NA)
+    initial_upd$V1 = initial[match(initial_upd$V2, initial$V2),]$V1
+    initial_upd$V1 = ifelse(is.na(initial_upd$V1), 0, initial_upd$V1)
+  }
+  
+
+  lRNA = read.table(aligned_lncRNA)
+  if (nrow(lRNA) == 19){
+    if (identical(lRNA$V2, c(16:34))){
+      lRNA_upd = lRNA
+    }
+    else{
+      print('Really?')
+    }}
+  else{
+    lRNA_upd = data.frame(V2 = c(16:34),
+                           V1 = NA)
+    lRNA_upd$V1 = lRNA[match(lRNA_upd$V2, lRNA$V2),]$V1
+    lRNA_upd$V1 = ifelse(is.na(lRNA_upd$V1), 0, lRNA_upd$V1)
+  }
+  
+  df = data.frame(length = rep(initial_upd$V2, 2), 
+                  count = c(lRNA_upd$V1, initial_upd$V1),
+                  alignment = c(rep('lncRNAs', 19), rep('Not', 19)))
+  
+#  normalization_coeff = sum(initial_upd$V2)
+#  df$count = df$count * 1000000/ normalization_coeff
+  
+  plot = ggplot(data = df, aes(x = length, y = count, fill = alignment)) + 
+    geom_bar(stat = "identity") + 
+    theme_classic() +
+    xlab('miRNA length') + 
+    ylab('Count, reads') + 
+    ggtitle(gg_title) + 
+    theme(text = element_text(size = 15), legend.position = "none") +
+    scale_x_continuous(breaks = c(16, 18, 20, 22, 24, 26, 28, 30, 32, 34)) + 
+    labs(fill = 'Alignment:') +
+    scale_fill_manual(values = c('lncRNAs' = "tomato", 
+                                 'Not' = "lightsteelblue1"))
+  return(plot)
+}
+
+align_distribution_plot_legend = function(not_aligned,
+                                          aligned_lncRNA,
+                                          gg_title){
+  initial = read.table(not_aligned)
+  if (nrow(initial) == 19){
+    if (identical(initial$V2, c(16:34))){
+      initial_upd = initial
+    }
+    else{
+      print('Really?')
+    }}
+  else{
+    initial_upd = data.frame(V2 = c(16:34),
+                             V1 = NA)
+    initial_upd$V1 = initial[match(initial_upd$V2, initial$V2),]$V1
+    initial_upd$V1 = ifelse(is.na(initial_upd$V1), 0, initial_upd$V1)
+  }
+  
+  
+  lRNA = read.table(aligned_lncRNA)
+  if (nrow(lRNA) == 19){
+    if (identical(lRNA$V2, c(16:34))){
+      lRNA_upd = lRNA
+    }
+    else{
+      print('Really?')
+    }}
+  else{
+    lRNA_upd = data.frame(V2 = c(16:34),
+                          V1 = NA)
+    lRNA_upd$V1 = lRNA[match(lRNA_upd$V2, lRNA$V2),]$V1
+    lRNA_upd$V1 = ifelse(is.na(lRNA_upd$V1), 0, lRNA_upd$V1)
+  }
+  
+  df = data.frame(length = rep(initial_upd$V2, 2), 
+                  count = c(lRNA_upd$V1, initial_upd$V1),
+                  alignment = c(rep('lncRNAs', 19), rep('Not', 19)))
+  
+#  normalization_coeff = sum(initial_upd$V2)
+#  df$count = df$count * 1000000/ normalization_coeff
+  
+  plot = ggplot(data = df, aes(x = length, y = count, fill = alignment)) + 
+    geom_bar(stat = "identity") + 
+    theme_classic() +
+    xlab('miRNA length') + 
+    ylab('Count, reads') + 
+    ggtitle(gg_title) + 
+    theme(text = element_text(size = 15), legend.position = "top", legend.direction="vertical") +
+    scale_x_continuous(breaks = c(16, 18, 20, 22, 24, 26, 28, 30, 32, 34)) + 
+    labs(fill = 'Alignment:') +
+    scale_fill_manual(values = c('lncRNAs' = "tomato", 
+                                 'Not' = "lightsteelblue1"))
+  return(plot)
+}
+
+
+
+extract_legend <- function(my_ggp) {
+  step1 <- ggplot_gtable(ggplot_build(my_ggp))
+  step2 <- which(sapply(step1$grobs, function(x) x$name) == "guide-box")
+  step3 <- step1$grobs[[step2]]
+  return(step3)
+}
+
+
+setwd('~/Anopheles_part3/align_not_xRNA_to_miRNA/F4_flag/align_to_lncRNA_v0/')
+
+mh1 = align_distribution_plot('flag_f4/male_head_rep1_trimmed.fastq.sam.flagf4.bam.fasta.sam.flagF4.bam.fasta.sam.f4.bam.fasta.length_distribution',
+                              'F4_flag/male_head_rep1_trimmed.fastq.sam.flagf4.bam.fasta.sam.flagF4.bam.fasta.sam.flagF4.bam.fasta.length_distribution',
+                              'Male head rep1')
+
+mh2 = align_distribution_plot('flag_f4/male_head_rep2_trimmed.fastq.sam.flagf4.bam.fasta.sam.flagF4.bam.fasta.sam.f4.bam.fasta.length_distribution',
+                              'F4_flag/male_head_rep2_trimmed.fastq.sam.flagf4.bam.fasta.sam.flagF4.bam.fasta.sam.flagF4.bam.fasta.length_distribution',
+                              'Male head rep2')
+
+mh3 = align_distribution_plot('flag_f4/male_head_rep3_trimmed.fastq.sam.flagf4.bam.fasta.sam.flagF4.bam.fasta.sam.f4.bam.fasta.length_distribution',
+                              'F4_flag/male_head_rep3_trimmed.fastq.sam.flagf4.bam.fasta.sam.flagF4.bam.fasta.sam.flagF4.bam.fasta.length_distribution',
+                              'Male head rep3')
+
+mt1 = align_distribution_plot('flag_f4/male_thorax_rep1_trimmed.fastq.sam.flagf4.bam.fasta.sam.flagF4.bam.fasta.sam.f4.bam.fasta.length_distribution',
+                              'F4_flag/male_thorax_rep1_trimmed.fastq.sam.flagf4.bam.fasta.sam.flagF4.bam.fasta.sam.flagF4.bam.fasta.length_distribution',
+                              'Male thorax rep1')
+
+mt2 = align_distribution_plot('flag_f4/male_thorax_rep2_trimmed.fastq.sam.flagf4.bam.fasta.sam.flagF4.bam.fasta.sam.f4.bam.fasta.length_distribution',
+                              'F4_flag/male_thorax_rep2_trimmed.fastq.sam.flagf4.bam.fasta.sam.flagF4.bam.fasta.sam.flagF4.bam.fasta.length_distribution',
+                              'Male thorax rep2')
+
+mt3 = align_distribution_plot('flag_f4/male_thorax_rep3_trimmed.fastq.sam.flagf4.bam.fasta.sam.flagF4.bam.fasta.sam.f4.bam.fasta.length_distribution',
+                              'F4_flag/male_thorax_rep3_trimmed.fastq.sam.flagf4.bam.fasta.sam.flagF4.bam.fasta.sam.flagF4.bam.fasta.length_distribution',
+                              'Male thorax rep3')
+
+fh1 = align_distribution_plot('flag_f4/female_head_rep1_trimmed.fastq.sam.flagf4.bam.fasta.sam.flagF4.bam.fasta.sam.f4.bam.fasta.length_distribution',
+                              'F4_flag/female_head_rep1_trimmed.fastq.sam.flagf4.bam.fasta.sam.flagF4.bam.fasta.sam.flagF4.bam.fasta.length_distribution',
+                              'Female head rep1')
+
+fh2 = align_distribution_plot('flag_f4/female_head_rep2_trimmed.fastq.sam.flagf4.bam.fasta.sam.flagF4.bam.fasta.sam.f4.bam.fasta.length_distribution',
+                              'F4_flag/female_head_rep2_trimmed.fastq.sam.flagf4.bam.fasta.sam.flagF4.bam.fasta.sam.flagF4.bam.fasta.length_distribution',
+                              'Female head rep2')
+
+fh3 = align_distribution_plot('flag_f4/female_head_rep3_trimmed.fastq.sam.flagf4.bam.fasta.sam.flagF4.bam.fasta.sam.f4.bam.fasta.length_distribution',
+                              'F4_flag/female_head_rep3_trimmed.fastq.sam.flagf4.bam.fasta.sam.flagF4.bam.fasta.sam.flagF4.bam.fasta.length_distribution',
+                              'Female head rep3')
+
+ft1 = align_distribution_plot('flag_f4/female_thorax_rep1_trimmed.fastq.sam.flagf4.bam.fasta.sam.flagF4.bam.fasta.sam.f4.bam.fasta.length_distribution',
+                              'F4_flag/female_thorax_rep1_trimmed.fastq.sam.flagf4.bam.fasta.sam.flagF4.bam.fasta.sam.flagF4.bam.fasta.length_distribution',
+                              'Female thorax rep1')
+
+ft2 = align_distribution_plot('flag_f4/female_thorax_rep2_trimmed.fastq.sam.flagf4.bam.fasta.sam.flagF4.bam.fasta.sam.f4.bam.fasta.length_distribution',
+                              'F4_flag/female_thorax_rep2_trimmed.fastq.sam.flagf4.bam.fasta.sam.flagF4.bam.fasta.sam.flagF4.bam.fasta.length_distribution',
+                              'Female thorax rep2')
+
+ft3 = align_distribution_plot('flag_f4/female_thorax_rep3_trimmed.fastq.sam.flagf4.bam.fasta.sam.flagF4.bam.fasta.sam.f4.bam.fasta.length_distribution',
+                              'F4_flag/female_thorax_rep3_trimmed.fastq.sam.flagf4.bam.fasta.sam.flagF4.bam.fasta.sam.flagF4.bam.fasta.length_distribution',
+                              'Female thorax rep3')
+
+leg = align_distribution_plot_legend('flag_f4/female_thorax_rep3_trimmed.fastq.sam.flagf4.bam.fasta.sam.flagF4.bam.fasta.sam.f4.bam.fasta.length_distribution',
+                              'F4_flag/female_thorax_rep3_trimmed.fastq.sam.flagf4.bam.fasta.sam.flagF4.bam.fasta.sam.flagF4.bam.fasta.length_distribution',
+                              'Female thorax rep3')
+
+
+shared_legend <- extract_legend(leg)
+
+
+library(gridExtra)
+gridExtra::grid.arrange(arrangeGrob(mh1, mh2, mh3, mt1, mt2, mt3, fh1, fh2, fh3, ft1, ft2, ft3, ncol = 3),
+                        shared_legend,
+                        nrow = 2,
+                        widths = c(10, 4), heights = c(15, 0.2))
+
+
+
+
+
+
+.unlist <- function (x){
+  ## do.call(c, ...) coerces factor to integer, which is undesired
+  x1 <- x[[1L]]
+  if (is.factor(x1)){
+    structure(unlist(x), class = "factor", levels = levels(x1))
+  } else {
+    do.call(c, x)
+  }
+}
+bam_to_df <- function(path){
+  bam <- scanBam(path)
+  bam_field <- names(bam[[1]])
+  list_bam <- lapply(bam_field, function(y) .unlist(lapply(bam, "[[", y)))
+  bam_df <- do.call("DataFrame", list_bam)
+  names(bam_df) <- bam_field
+  bam_df <- data.frame(bam_df)
+  return(bam_df)
+}
+
+ft3 = bam_to_df('~/Anopheles_part3/align_not_xRNA_to_miRNA/F4_flag/align_to_lncRNA_v0/F4_flag/female_thorax_rep3_trimmed.fastq.sam.flagf4.bam.fasta.sam.flagF4.bam.fasta.sam.flagF4.bam')
+ft3 = ft3[ft3$qwidth == 20,]
+View(as.data.frame(table(ft3$rname)))
+
+table(ft3$qwidth)
+
+
+plotcoverage_upd = function(TE_name, TE_library_path, bam_path){
+  .unlist <- function (x){
+    ## do.call(c, ...) coerces factor to integer, which is undesired
+    x1 <- x[[1L]]
+    if (is.factor(x1)){
+      structure(unlist(x), class = "factor", levels = levels(x1))
+    } else {
+      do.call(c, x)
+    }
+  }
+  bam_to_df <- function(path){
+    bam <- scanBam(path)
+    bam_field <- names(bam[[1]])
+    list_bam <- lapply(bam_field, function(y) .unlist(lapply(bam, "[[", y)))
+    bam_df <- do.call("DataFrame", list_bam)
+    names(bam_df) <- bam_field
+    bam_df <- data.frame(bam_df)
+    return(bam_df)
+  }
+  TE_library = readDNAStringSet(TE_library_path)
+  TE_library@ranges@NAMES = unlist(lapply(strsplit(TE_library@ranges@NAMES, ' '), function(x)x[1]))
+  TE_length = TE_library[TE_library@ranges@NAMES == TE_name,]@ranges@width
+  TE_coverage = data.frame(position = c(1:TE_length), sense = 0, antisense = 0)
+  intervals = bam_to_df(bam_path)
+  print('Bam file successfully downloaded. Number of hits at all:')
+  print(nrow(intervals))
+  intervals = intervals[intervals$rname == TE_name,]
+  print('Bam file successfully downloaded. Number of hits:')
+  print(nrow(intervals))
+  if (nrow(intervals) == 0){
+    plot = ggplot()
+    return(plot)
+  }
+  
+  for (i in 1:nrow(intervals)){
+    if (intervals$strand[i] == '+'){
+      TE_coverage$sense[c(intervals$pos[i]:intervals$pos[i]+intervals$qwidth[i]-1)] =
+        TE_coverage$sense[c(intervals$pos[i]:intervals$pos[i]+intervals$qwidth[i]-1)] + 1
+    }
+    else {
+      TE_coverage$antisense[c(intervals$pos[i]:intervals$pos[i]+intervals$qwidth[i]-1)] =
+        TE_coverage$antisense[c(intervals$pos[i]:intervals$pos[i]+intervals$qwidth[i]-1)] + 1
+    }
+    if ((i %% 1000) == 0){
+      print(paste(100*i/nrow(intervals), 'percent done'))
+    }
+  }
+  
+  TE_coverage_melted = data.frame(position = rep(TE_coverage$position, 2), reads = c(TE_coverage$sense,
+                                                                                     TE_coverage$antisense),
+                                  label = c(rep('sense', nrow(TE_coverage)),
+                                            rep('antisense', nrow(TE_coverage))))
+  TE_coverage_melted$reads = TE_coverage_melted$reads * 1000000 / nrow(intervals)
+  TE_coverage_melted$reads[TE_coverage_melted$label == 'antisense'] = -1 * TE_coverage_melted$reads[TE_coverage_melted$label == 'antisense']
+  
+  plot = ggplot(data = TE_coverage_melted, aes(x = position, y= reads, col = label)) + 
+    geom_line() + 
+    theme_classic() + 
+    scale_color_manual(values = c("deepskyblue2", "tomato")) +
+    ggtitle(TE_name) +
+    xlab('Genomic coordinate') +
+    ylab('Scaled coverage, RPM') +
+    labs(col = 'Strand:')
+  return(plot)
+}
+
+plotcoverage_upd('Merged.15593.1',
+                 '/mnt/raid/sergey/bio-first/small_RNA/mosquito_project/lncRNA/lncRNA_aga.fasta',
+                 '~/Anopheles_part3/align_not_xRNA_to_miRNA/F4_flag/align_to_lncRNA_v0/F4_flag/female_thorax_rep3_trimmed.fastq.sam.flagf4.bam.fasta.sam.flagF4.bam.fasta.sam.flagF4.bam')
+
+
+
+#########peak 20 secret
+
+
+
+
+df = bam_to_df('~/Anopheles_part3/align_not_xRNA_to_miRNA/F4_flag/align_to_lncRNA_v0/F4_flag/female_head_rep1_trimmed.fastq.sam.flagf4.bam.fasta.sam.flagF4.bam.fasta.sam.flagF4.bam')
+df = df[df$qwidth == 20,]
+
+
+View(as.data.frame(table(df$seq)))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+##################piRNA and siRNA align to TE
+
+
+align_distribution_plot = function(initial_dist,
+                                   aligned_to_TE,
+                                   gg_title){
+  initial = read.table(initial_dist)
+  if (nrow(initial) == 19){
+    if (identical(initial$V2, c(16:34))){
+      initial_upd = initial
+    }
+    else{
+      print('Really?')
+    }}
+  else{
+    initial_upd = data.frame(V2 = c(16:34),
+                             V1 = NA)
+    initial_upd$V1 = initial[match(initial_upd$V2, initial$V2),]$V1
+    initial_upd$V1 = ifelse(is.na(initial_upd$V1), 0, initial_upd$V1)
+  }
+  
+  TE = read.table(aligned_to_TE)
+  if (nrow(TE) == 19){
+    if (identical(TE$V2, c(16:34))){
+      TE_upd = TE
+    }
+    else{
+      print('Really?')
+    }}
+  else{
+    TE_upd = data.frame(V2 = c(16:34),
+                          V1 = NA)
+    TE_upd$V1 = TE[match(TE_upd$V2, TE$V2),]$V1
+    TE_upd$V1 = ifelse(is.na(TE_upd$V1), 0, TE_upd$V1)
+  }
+  
+  
+  df = data.frame(length = rep(initial_upd$V2, 2), 
+                  count = c(TE_upd$V1, initial_upd$V1 - TE_upd$V1),
+                  alignments = c(rep('Transposable elements', 19), rep('Not TEs', 19)))
+  df$count = df$count * 1000000/ sum(initial_upd$V1)
+  
+  plot = ggplot(data = df, aes(x = length, y = count, fill = alignments)) + 
+    geom_bar(stat = "identity") + 
+    theme_bw() +
+    xlab('piRNA and siRNA length') + 
+    ylab('Count, RPM') + 
+    ggtitle(gg_title) + 
+    theme(text = element_text(size = 15), legend.position = "none") +
+    scale_x_continuous(breaks = c(16, 18, 20, 22, 24, 26, 28, 30, 32, 34)) + 
+    labs(fill = 'Alignments:') +
+    scale_fill_manual(values = c('Transposable elements' = "deepskyblue2", 'Not TEs' = "tomato"))
+  return(plot)
+}
+
+
+align_distribution_plot_legend = function(initial_dist,
+                                          aligned_to_TE,
+                                          gg_title){
+  initial = read.table(initial_dist)
+  if (nrow(initial) == 19){
+    if (identical(initial$V2, c(16:34))){
+      initial_upd = initial
+    }
+    else{
+      print('Really?')
+    }}
+  else{
+    initial_upd = data.frame(V2 = c(16:34),
+                             V1 = NA)
+    initial_upd$V1 = initial[match(initial_upd$V2, initial$V2),]$V1
+    initial_upd$V1 = ifelse(is.na(initial_upd$V1), 0, initial_upd$V1)
+  }
+  
+  TE = read.table(aligned_to_TE)
+  if (nrow(TE) == 19){
+    if (identical(TE$V2, c(16:34))){
+      TE_upd = TE
+    }
+    else{
+      print('Really?')
+    }}
+  else{
+    TE_upd = data.frame(V2 = c(16:34),
+                        V1 = NA)
+    TE_upd$V1 = TE[match(TE_upd$V2, TE$V2),]$V1
+    TE_upd$V1 = ifelse(is.na(TE_upd$V1), 0, TE_upd$V1)
+  }
+  
+  
+  df = data.frame(length = rep(initial_upd$V2, 2), 
+                  count = c(TE_upd$V1, initial_upd$V1 - TE_upd$V1),
+                  alignments = c(rep('Transposable elements', 19), rep('Not TEs', 19)))
+  df$count = df$count * 1000000/ sum(initial_upd$V1)
+  
+  plot = ggplot(data = df, aes(x = length, y = count, fill = alignments)) + 
+    geom_bar(stat = "identity") + 
+    theme_bw() +
+    xlab('small RNA length') + 
+    ylab('Count, RPM') + 
+    ggtitle(gg_title) + 
+    theme(text = element_text(size = 15), legend.position = "right") +
+    scale_x_continuous(breaks = c(16, 18, 20, 22, 24, 26, 28, 30, 32, 34)) + 
+    labs(fill = 'Alignments:') +
+    scale_fill_manual(values = c('Transposable elements' = "deepskyblue2", 'Not TEs' = "tomato"))
+  return(plot)
+}
+
+extract_legend <- function(my_ggp) {
+  step1 <- ggplot_gtable(ggplot_build(my_ggp))
+  step2 <- which(sapply(step1$grobs, function(x) x$name) == "guide-box")
+  step3 <- step1$grobs[[step2]]
+  return(step3)
+}
+
+
+
+mh1 = align_distribution_plot('~/Anopheles_part2/piRNA_and_siRNA/male_head_rep1_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.length_distribution',
+                              '~/Anopheles_part2/piRNA_and_siRNA/aligned_to_TE_F4/male_head_rep1_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam.fasta.length_distribution',
+                              'Male head rep1'
+)
+
+mh2 = align_distribution_plot('~/Anopheles_part2/piRNA_and_siRNA/male_head_rep2_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.length_distribution',
+                              '~/Anopheles_part2/piRNA_and_siRNA/aligned_to_TE_F4/male_head_rep2_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam.fasta.length_distribution',
+                              'Male head rep2'
+)
+
+mh3 = align_distribution_plot('~/Anopheles_part2/piRNA_and_siRNA/male_head_rep3_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.length_distribution',
+                              '~/Anopheles_part2/piRNA_and_siRNA/aligned_to_TE_F4/male_head_rep3_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam.fasta.length_distribution',
+                              'Male head rep3'
+)
+
+mt1 = align_distribution_plot('~/Anopheles_part2/piRNA_and_siRNA/male_thorax_rep1_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.length_distribution',
+                              '~/Anopheles_part2/piRNA_and_siRNA/aligned_to_TE_F4/male_thorax_rep1_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam.fasta.length_distribution',
+                              'Male thorax rep1'
+)
+
+mt2 = align_distribution_plot('~/Anopheles_part2/piRNA_and_siRNA/male_thorax_rep2_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.length_distribution',
+                              '~/Anopheles_part2/piRNA_and_siRNA/aligned_to_TE_F4/male_thorax_rep2_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam.fasta.length_distribution',
+                              'Male thorax rep2'
+)
+
+mt3 = align_distribution_plot('~/Anopheles_part2/piRNA_and_siRNA/male_thorax_rep3_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.length_distribution',
+                              '~/Anopheles_part2/piRNA_and_siRNA/aligned_to_TE_F4/male_thorax_rep3_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam.fasta.length_distribution',
+                              'Male thorax rep3'
+)
+
+fh1 = align_distribution_plot('~/Anopheles_part2/piRNA_and_siRNA/female_head_rep1_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.length_distribution',
+                              '~/Anopheles_part2/piRNA_and_siRNA/aligned_to_TE_F4/female_head_rep1_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam.fasta.length_distribution',
+                              'Female head rep1')
+
+fh2 = align_distribution_plot('~/Anopheles_part2/piRNA_and_siRNA/female_head_rep2_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.length_distribution',
+                              '~/Anopheles_part2/piRNA_and_siRNA/aligned_to_TE_F4/female_head_rep2_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam.fasta.length_distribution',
+                              'Female head rep2')
+
+fh3 = align_distribution_plot('~/Anopheles_part2/piRNA_and_siRNA/female_head_rep3_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.length_distribution',
+                              '~/Anopheles_part2/piRNA_and_siRNA/aligned_to_TE_F4/female_head_rep3_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam.fasta.length_distribution',
+                              'Female head rep3')
+
+
+ft1 = align_distribution_plot('~/Anopheles_part2/piRNA_and_siRNA/female_thorax_rep1_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.length_distribution',
+                              '~/Anopheles_part2/piRNA_and_siRNA/aligned_to_TE_F4/female_thorax_rep1_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam.fasta.length_distribution',
+                              'Female thorax rep1')
+
+ft2 = align_distribution_plot('~/Anopheles_part2/piRNA_and_siRNA/female_thorax_rep2_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.length_distribution',
+                              '~/Anopheles_part2/piRNA_and_siRNA/aligned_to_TE_F4/female_thorax_rep2_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam.fasta.length_distribution',
+                              'Female thorax rep2')
+
+ft3 = align_distribution_plot('~/Anopheles_part2/piRNA_and_siRNA/female_thorax_rep3_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.length_distribution',
+                              '~/Anopheles_part2/piRNA_and_siRNA/aligned_to_TE_F4/female_thorax_rep3_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam.fasta.length_distribution',
+                              'Female thorax rep3')
+
+
+
+ggp1_legend = align_distribution_plot_legend('~/Anopheles_part2/piRNA_and_siRNA/female_thorax_rep3_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.length_distribution',
+                                             '~/Anopheles_part2/piRNA_and_siRNA/aligned_to_TE_F4/female_thorax_rep3_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam.fasta.length_distribution',
+                                             'Female thorax rep3')
+
+shared_legend <- extract_legend(ggp1_legend)
+
+library(gridExtra)
+gridExtra::grid.arrange(arrangeGrob(mh1, mh2, mh3, mt1, mt2, mt3, fh1, fh2, fh3, ft1, ft2, ft3, ncol = 3),
+                        shared_legend,
+                        nrow = 2,
+                        widths = c(10, 4), heights = c(15, 0.2))
+
+
+
+
+
+
+
+###########which TE correspond to each sample?
+
+setwd('~/Anopheles_part2/piRNA_and_siRNA/flag_4_V0/')
+
+.unlist <- function (x){
+  ## do.call(c, ...) coerces factor to integer, which is undesired
+  x1 <- x[[1L]]
+  if (is.factor(x1)){
+    structure(unlist(x), class = "factor", levels = levels(x1))
+  } else {
+    do.call(c, x)
+  }
+}
+bam_to_df <- function(path){
+  bam <- scanBam(path)
+  bam_field <- names(bam[[1]])
+  list_bam <- lapply(bam_field, function(y) .unlist(lapply(bam, "[[", y)))
+  bam_df <- do.call("DataFrame", list_bam)
+  names(bam_df) <- bam_field
+  bam_df <- data.frame(bam_df)
+  return(bam_df)
+}
+
+male_head_1 = bam_to_df('male_head_rep1_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.V0.ALL_ALIGNED_TE_JOSEFAAND_NO.sam.TE.V0.bam')
+nrow(male_head_1[male_head_1$rname == 'Acol_gypsy_Ele87#LTR/Gypsy',])/nrow(male_head_1)
+
+
+
+male_head_1_table = as.data.frame(table(male_head_1$rname, male_head_1$qwidth))
+male_head_1_table$Freq = male_head_1_table$Freq * 1000000 / length(unique(male_head_1$qname))
+#male_head_1_table = male_head_1_table[male_head_1_table$Freq > 200,]
+
+male_head_2 = bam_to_df('male_head_rep2_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam')
+male_head_2_table = as.data.frame(table(male_head_2$rname, male_head_2$qwidth))
+male_head_2_table$Freq = male_head_2_table$Freq * 1000000 / length(unique(male_head_2$qname))
+#male_head_2_table = male_head_2_table[male_head_2_table$Freq > 200,]
+
+male_head_3 = bam_to_df('male_head_rep3_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam')
+male_head_3_table = as.data.frame(table(male_head_3$rname, male_head_3$qwidth))
+male_head_3_table$Freq = male_head_3_table$Freq * 1000000 / length(unique(male_head_3$qname))
+#male_head_3_table = male_head_3_table[male_head_3_table$Freq > 200,]
+
+female_head_1 = bam_to_df('female_head_rep1_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam')
+female_head_1_table = as.data.frame(table(female_head_1$rname, female_head_1$qwidth))
+female_head_1_table$Freq = female_head_1_table$Freq * 1000000 / length(unique(female_head_1$qname))
+#female_head_1_table = female_head_1_table[female_head_1_table$Freq > 200,]
+
+female_head_2 = bam_to_df('female_head_rep2_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam')
+female_head_2_table = as.data.frame(table(female_head_2$rname, female_head_2$qwidth))
+female_head_2_table$Freq = female_head_2_table$Freq * 1000000 / length(unique(female_head_2$qname))
+#female_head_2_table = female_head_2_table[female_head_2_table$Freq > 200,]
+
+female_head_3 = bam_to_df('female_head_rep3_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam')
+female_head_3_table = as.data.frame(table(female_head_3$rname, female_head_3$qwidth))
+female_head_3_table$Freq = female_head_3_table$Freq * 1000000 / length(unique(female_head_3$qname))
+#female_head_3_table = female_head_3_table[female_head_3_table$Freq > 200,]
+
+male_thorax_1 = bam_to_df('male_thorax_rep1_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam')
+male_thorax_1_table = as.data.frame(table(male_thorax_1$rname, male_thorax_1$qwidth))
+male_thorax_1_table$Freq = male_thorax_1_table$Freq * 1000000 / length(unique(male_thorax_1$qname))
+#male_thorax_1_table = male_thorax_1_table[male_thorax_1_table$Freq > 200,]
+
+male_thorax_2 = bam_to_df('male_thorax_rep2_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam')
+male_thorax_2_table = as.data.frame(table(male_thorax_2$rname, male_thorax_2$qwidth))
+male_thorax_2_table$Freq = male_thorax_2_table$Freq * 1000000 / length(unique(male_thorax_2$qname))
+#male_thorax_2_table = male_thorax_2_table[male_thorax_2_table$Freq > 200,]
+
+male_thorax_3 = bam_to_df('male_thorax_rep3_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam')
+male_thorax_3_table = as.data.frame(table(male_thorax_3$rname, male_thorax_3$qwidth))
+male_thorax_3_table$Freq = male_thorax_3_table$Freq * 1000000 / length(unique(male_thorax_3$qname))
+#male_thorax_3_table = male_thorax_3_table[male_thorax_3_table$Freq > 200,]
+
+female_thorax_1 = bam_to_df('female_thorax_rep1_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam')
+female_thorax_1_table = as.data.frame(table(female_thorax_1$rname, female_thorax_1$qwidth))
+female_thorax_1_table$Freq = female_thorax_1_table$Freq * 1000000 / length(unique(female_thorax_1$qname))
+#female_thorax_1_table = female_thorax_1_table[female_thorax_1_table$Freq > 200,]
+
+female_thorax_2 = bam_to_df('female_thorax_rep2_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam')
+female_thorax_2_table = as.data.frame(table(female_thorax_2$rname, female_thorax_2$qwidth))
+female_thorax_2_table$Freq = female_thorax_2_table$Freq * 1000000 / length(unique(female_thorax_2$qname))
+#female_thorax_2_table = female_thorax_2_table[female_thorax_2_table$Freq > 200,]
+
+female_thorax_3 = bam_to_df('female_thorax_rep3_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam')
+female_thorax_3_table = as.data.frame(table(female_thorax_3$rname, female_thorax_3$qwidth))
+female_thorax_3_table$Freq = female_thorax_3_table$Freq * 1000000 / length(unique(female_thorax_3$qname))
+#female_thorax_3_table = female_thorax_3_table[female_thorax_3_table$Freq > 200,]
+
+#visualize
+male_head_1_table$label = ifelse(male_head_1_table$Var1 == 'Acol_gypsy_Ele87#LTR/Gypsy', 'Ele87_LTR_Gypsy', 'Other TEs')
+mh1 = ggplot(data = male_head_1_table, aes(x = Var2, fill = label, y = Freq)) +
+  xlab('piRNA and siRNA length') + 
+  ylab('Count, RPM') + 
+  geom_bar(stat = 'identity') + theme_bw() +
+  ggtitle('Male head rep 1') + 
+  theme(text = element_text(size = 15), legend.position = "none") +
+  labs(fill = 'Alignments to TEs:') 
+
+male_head_2_table$label = ifelse(male_head_2_table$Var1 == 'Acol_gypsy_Ele87#LTR/Gypsy', 'Ele87_LTR_Gypsy', 'Other TEs')
+mh2 = ggplot(data = male_head_2_table, aes(x = Var2, fill = label, y = Freq)) +
+  xlab('piRNA and siRNA length') + 
+  ylab('Count, RPM') + 
+  geom_bar(stat = 'identity') + theme_bw() +
+  ggtitle('Male head rep 2') + 
+  theme(text = element_text(size = 15), legend.position = "none") +
+  labs(fill = 'Alignments to TEs:') 
+ 
+
+male_head_3_table$label = ifelse(male_head_3_table$Var1 == 'Acol_gypsy_Ele87#LTR/Gypsy', 'Ele87_LTR_Gypsy', 'Other TEs')
+mh3 = ggplot(data = male_head_3_table, aes(x = Var2, fill = label, y = Freq)) +
+  xlab('piRNA and siRNA length') + 
+  ylab('Count, RPM') + 
+  geom_bar(stat = 'identity') + theme_bw() +
+  ggtitle('Male head rep 3') + 
+  theme(text = element_text(size = 15), legend.position = "none") +
+  labs(fill = 'Alignments to TEs:') 
+
+
+female_head_1_table$label = ifelse(female_head_1_table$Var1 == 'Acol_gypsy_Ele87#LTR/Gypsy', 'Ele87_LTR_Gypsy', 'Other TEs')
+fh1 = ggplot(data = female_head_1_table, aes(x = Var2, fill = label, y = Freq)) +
+  xlab('piRNA and siRNA length') + 
+  ylab('Count, RPM') + 
+  geom_bar(stat = 'identity') + theme_bw() +
+  ggtitle('Female head rep 1') + 
+  theme(text = element_text(size = 15), legend.position = "none") +
+  labs(fill = 'Alignments to TEs:') 
+
+
+female_head_2_table$label = ifelse(female_head_2_table$Var1 == 'Acol_gypsy_Ele87#LTR/Gypsy', 'Ele87_LTR_Gypsy', 'Other TEs')
+fh2 = ggplot(data = female_head_2_table, aes(x = Var2, fill = label, y = Freq)) +
+  xlab('piRNA and siRNA length') + 
+  ylab('Count, RPM') + 
+  geom_bar(stat = 'identity') + theme_bw() +
+  ggtitle('Female head rep 2') + 
+  theme(text = element_text(size = 15), legend.position = "none") +
+  labs(fill = 'Alignments to TEs:')
+
+female_head_3_table$label = ifelse(female_head_3_table$Var1 == 'Acol_gypsy_Ele87#LTR/Gypsy', 'Ele87_LTR_Gypsy', 'Other TEs')
+fh3 = ggplot(data = female_head_3_table, aes(x = Var2, fill = label, y = Freq)) +
+  xlab('piRNA and siRNA length') + 
+  ylab('Count, RPM') + 
+  geom_bar(stat = 'identity') + theme_bw() +
+  ggtitle('Female head rep 3') + 
+  theme(text = element_text(size = 15), legend.position = "none") +
+  labs(fill = 'Alignments to TEs:') 
+
+male_thorax_1_table$label = ifelse(male_thorax_1_table$Var1 == 'Acol_gypsy_Ele87#LTR/Gypsy', 'Ele87_LTR_Gypsy', 'Other TEs')
+mt1 = ggplot(data = male_thorax_1_table, aes(x = Var2, fill = label, y = Freq)) +
+  xlab('piRNA and siRNA length') + 
+  ylab('Count, RPM') + 
+  geom_bar(stat = 'identity') + theme_bw() +
+  ggtitle('Male thorax rep 1') + 
+  theme(text = element_text(size = 15), legend.position = "none") +
+  labs(fill = 'Alignments to TEs:') 
+
+
+male_thorax_2_table$label = ifelse(male_thorax_2_table$Var1 == 'Acol_gypsy_Ele87#LTR/Gypsy', 'Ele87_LTR_Gypsy', 'Other TEs')
+mt2 = ggplot(data = male_thorax_2_table, aes(x = Var2, fill = label, y = Freq)) +
+  xlab('piRNA and siRNA length') + 
+  ylab('Count, RPM') + 
+  geom_bar(stat = 'identity') + theme_bw() +
+  ggtitle('Male thorax rep 2') + 
+  theme(text = element_text(size = 15), legend.position = "none") +
+  labs(fill = 'Alignments to TEs:') 
+
+
+male_thorax_3_table$label = ifelse(male_thorax_3_table$Var1 == 'Acol_gypsy_Ele87#LTR/Gypsy', 'Ele87_LTR_Gypsy', 'Other TEs')
+mt3 = ggplot(data = male_thorax_3_table, aes(x = Var2, fill = label, y = Freq)) +
+  xlab('piRNA and siRNA length') + 
+  ylab('Count, RPM') + 
+  geom_bar(stat = 'identity') + theme_bw() +
+  ggtitle('Male thorax rep 3') + 
+  theme(text = element_text(size = 15), legend.position = "none") +
+  labs(fill = 'Alignments to TEs:') 
+
+female_thorax_1_table$label = ifelse(female_thorax_1_table$Var1 == 'Acol_gypsy_Ele87#LTR/Gypsy', 'Ele87_LTR_Gypsy', 'Other TEs')
+ft1 = ggplot(data = female_thorax_1_table, aes(x = Var2, fill = label, y = Freq)) +
+  xlab('piRNA and siRNA length') + 
+  ylab('Count, RPM') + 
+  geom_bar(stat = 'identity') + theme_bw() +
+  ggtitle('Female thorax rep 1') + 
+  theme(text = element_text(size = 15), legend.position = "none") +
+  labs(fill = 'Alignments to TEs:') 
+
+female_thorax_2_table$label = ifelse(female_thorax_2_table$Var1 == 'Acol_gypsy_Ele87#LTR/Gypsy', 'Ele87_LTR_Gypsy', 'Other TEs')
+ft2 = ggplot(data = female_thorax_2_table, aes(x = Var2, fill = label, y = Freq)) +
+  xlab('piRNA and siRNA length') + 
+  ylab('Count, RPM') + 
+  geom_bar(stat = 'identity') + theme_bw() +
+  ggtitle('Female thorax rep 2') + 
+  theme(text = element_text(size = 15), legend.position = "none") +
+  labs(fill = 'Alignments to TEs:')
+
+female_thorax_3_table$label = ifelse(female_thorax_3_table$Var1 == 'Acol_gypsy_Ele87#LTR/Gypsy', 'Ele87_LTR_Gypsy', 'Other TEs')
+ft3 = ggplot(data = female_thorax_3_table, aes(x = Var2, fill = label, y = Freq)) +
+  xlab('piRNA and siRNA length') + 
+  ylab('Count, RPM') + 
+  geom_bar(stat = 'identity') + theme_bw() +
+  ggtitle('Female thorax rep 3') + 
+  theme(text = element_text(size = 15), legend.position = "none") +
+  labs(fill = 'Alignments to TEs:')
+
+
+
+extract_legend <- function(my_ggp) {
+  step1 <- ggplot_gtable(ggplot_build(my_ggp))
+  step2 <- which(sapply(step1$grobs, function(x) x$name) == "guide-box")
+  step3 <- step1$grobs[[step2]]
+  return(step3)
+}
+
+legend = ggplot(data = female_thorax_3_table, aes(x = Var2, fill = label, y = Freq)) +
+  xlab('piRNA and siRNA length') + 
+  ylab('Count, RPM') + 
+  geom_bar(stat = 'identity') + theme_bw() +
+  ggtitle('Female thorax rep 3') + 
+  theme(text = element_text(size = 15), legend.position = "bottom") +
+  labs(fill = 'Alignments to TEs:')
+
+shared_legend = extract_legend(legend)
+
+library(gridExtra)
+gridExtra::grid.arrange(arrangeGrob(mh1, mh2, mh3, mt1, mt2, mt3, fh1, fh2, fh3, ft1, ft2, ft3, ncol = 3),
+                        shared_legend,
+                        nrow = 1,
+                        widths = c(10, 3))
+
+
+
+
+
+
+
+
+
+
+male_head_1_table = male_head_1_table[order(male_head_1_table$Var1),]
+male_head_2_table = male_head_2_table[order(male_head_2_table$Var1),]
+male_head_3_table = male_head_3_table[order(male_head_3_table$Var1),]
+female_head_1_table = female_head_1_table[order(female_head_1_table$Var1),]
+female_head_2_table = female_head_2_table[order(female_head_2_table$Var1),]
+female_head_3_table = female_head_3_table[order(female_head_3_table$Var1),]
+
+male_thorax_1_table = male_thorax_1_table[order(male_thorax_1_table$Var1),]
+male_thorax_2_table = male_thorax_2_table[order(male_thorax_2_table$Var1),]
+male_thorax_3_table = male_thorax_3_table[order(male_thorax_3_table$Var1),]
+female_thorax_1_table = female_thorax_1_table[order(female_thorax_1_table$Var1),]
+female_thorax_2_table = female_thorax_2_table[order(female_thorax_2_table$Var1),]
+female_thorax_3_table = female_thorax_3_table[order(female_thorax_3_table$Var1),]
+
+
+#heatmap all TEs, RPM:
+
+summary_all = data.frame(
+  male_head_1 = male_head_1_table$Freq,
+  male_head_2 = male_head_2_table$Freq,
+  male_head_3 = male_head_3_table$Freq,
+  female_head_1 = female_head_1_table$Freq,
+  female_head_2 = female_head_2_table$Freq,
+  female_head_3 = female_head_3_table$Freq,
+  male_thorax_1 = male_thorax_1_table$Freq,
+  male_thorax_2 = male_thorax_2_table$Freq,
+  male_thorax_3 = male_thorax_3_table$Freq,
+  female_thorax_1 = female_thorax_1_table$Freq,
+  female_thorax_2 = female_thorax_2_table$Freq,
+  female_thorax_3 = female_thorax_3_table$Freq
+)
+
+rownames(summary_all) = male_head_1_table$Var1
+pheatmap(summary_all, scale = 'row')
+
+#PCA
+library(factoextra)
+pca_rez = prcomp(t(summary_all), scale = TRUE)
+
+fviz_pca_ind(pca_rez,
+             repel = TRUE     # Avoid text overlapping
+)
+
+
+
+summary_all$male_head = (summary_all$male_head_1 + summary_all$male_head_2 + summary_all$male_head_3) / 3
+summary_all$male_head_1 = NULL
+summary_all$male_head_2 = NULL
+summary_all$male_head_3 = NULL
+
+summary_all$male_thorax = (summary_all$male_thorax_1 + summary_all$male_thorax_2 + summary_all$male_thorax_3) / 3
+summary_all$male_thorax_1 = NULL
+summary_all$male_thorax_2 = NULL
+summary_all$male_thorax_3 = NULL
+
+
+summary_all$female_head = (summary_all$female_head_1 + summary_all$female_head_2 + summary_all$female_head_3) / 3
+summary_all$female_head_1 = NULL
+summary_all$female_head_2 = NULL
+summary_all$female_head_3 = NULL
+
+
+summary_all$female_thorax = (summary_all$female_thorax_1 + summary_all$female_thorax_2 + summary_all$female_thorax_3) / 3
+summary_all$female_thorax_1 = NULL
+summary_all$female_thorax_2 = NULL
+summary_all$female_thorax_3 = NULL
+
+
+pheatmap(summary_all, scale = 'row')
+
+
+summary_all$take = 
+  ifelse(summary_all$male_head > 200 |
+           summary_all$male_thorax > 200 |
+           summary_all$female_head > 200 |
+           summary_all$female_thorax > 200, TRUE, FALSE)
+
+summary = summary_all[summary_all$take == TRUE,]
+summary$take = NULL
+pheatmap(summary, scale = 'row')
+
+
+
+summary = summary[order(summary$male_head, decreasing = TRUE),]
+summary
+summary_without_outlier = summary[2:100,]
+summary_without_outlier
+pheatmap(log2(summary), scale = 'none')
+
+#Есть проблема нормализации на хитмапе. 
+#Нормализация по строкам не дает полной картины, нормализация по столбцам убивается аутлаерами. 
+
+
+
+#TE_length distribution
+ggplot(data = female_head_1, aes(x = qwidth, fill = rname)) + geom_histogram()
+
+View(as.data.frame(table(male_head_1$rname, male_head_1$qwidth)))
+
+
+
+#RepeatMasker, compare
+
+
+gambie = read.table('~/Anopheles/reference/genome/RepeatMasker_agambie/GCF_000005575.2_AgamP3_genomic.fasta.out', fill = T)
+gambie = gambie[c(3:141061),]
+gambie = na.omit(gambie)
+
+TE_base = readDNAStringSet('~/Anopheles/reference/TE_base/TE_library_josefa.fasta')
+TEs = data.frame(name = unlist(lapply(strsplit(TE_base@ranges@NAMES, '#'), function(x)x[1])),
+                                               width = TE_base@ranges@width)
+
+gambie$TE_length = TEs[match(gambie$V10, TEs$name),]$width
+gambie$percent = (as.numeric(as.character(gambie$V7)) - as.numeric(as.character(gambie$V6)))/gambie$TE_length
+gambie = gambie[gambie$percent >= 0.8,]
+
+gambie_df = as.data.frame(table(gambie$V11))
+gambie_df = gambie_df[gambie_df$Freq != 0,]
+gambie_df = gambie_df[order(gambie_df$Freq, decreasing = TRUE),]
+gambie_df
+
+gambie_df
+
+ggplot(data = gambie_df, aes(x = reorder(Var1, Freq), y = Freq)) +
+  geom_bar(stat = 'identity', fill = 'cornflowerblue') +
+  coord_flip() +
+  xlab('TE class') + 
+  ylab('Count') + 
+  theme_bw() +
+  ggtitle('At least 80% length Transposable elements\nAnopheles gambiae genome') + 
+  theme(text = element_text(size = 15))
+
+
+col = read.table('~/Anopheles_part2/Masker_coluzzi/AcolMOP1_genome.fasta.out', fill = T)
+col = col[c(3:136647),]
+col = na.omit(col)
+col$TE_length = TEs[match(col$V10, TEs$name),]$width
+
+col$percent = (as.numeric(as.character(col$V7)) - as.numeric(as.character(col$V6)))/col$TE_length
+col = col[col$percent >= 0.8,]
+
+
+col_df = as.data.frame(table(col$V11))
+col_df = col_df[col_df$Freq != 0,]
+
+ggplot(data = col_df, aes(x = reorder(Var1, Freq), y = Freq)) +
+  geom_bar(stat = 'identity', fill = 'cornflowerblue') +
+  coord_flip() +
+  xlab('TE class') + 
+  ylab('Count') + 
+  theme_bw() +
+  ggtitle('At least 80% length Transposable elements\nAnopheles coluzzii genome') + 
+  theme(text = element_text(size = 15))
+
+
+###################################################### check CIGAR strings, Ele87
+setwd('~/Anopheles_part2/piRNA_and_siRNA/flag_4_V3/')
+.unlist <- function (x){
+  ## do.call(c, ...) coerces factor to integer, which is undesired
+  x1 <- x[[1L]]
+  if (is.factor(x1)){
+    structure(unlist(x), class = "factor", levels = levels(x1))
+  } else {
+    do.call(c, x)
+  }
+}
+bam_to_df <- function(path){
+  bam <- scanBam(path)
+  bam_field <- names(bam[[1]])
+  list_bam <- lapply(bam_field, function(y) .unlist(lapply(bam, "[[", y)))
+  bam_df <- do.call("DataFrame", list_bam)
+  names(bam_df) <- bam_field
+  bam_df <- data.frame(bam_df)
+  return(bam_df)
+}
+
+mh1 = bam_to_df('male_head_rep1_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.V3.ALL_ALIGNED_TE_JOSEFAAND_NO.sam.V3_to_TE.bam')
+mh1 = mh1[mh1$rname == 'Acol_gypsy_Ele87#LTR/Gypsy',]
+table(mh1$cigar)
+
+table(mh1$qwidth)
+
+
+
+
+#По каждому TE нарисуй covarage sense, antisense КРАСИВЫЙ (!)
+
+plotcoverage = function(TE_name, TE_library_path, bam_path){
+  .unlist <- function (x){
+    ## do.call(c, ...) coerces factor to integer, which is undesired
+    x1 <- x[[1L]]
+    if (is.factor(x1)){
+      structure(unlist(x), class = "factor", levels = levels(x1))
+    } else {
+      do.call(c, x)
+    }
+  }
+  bam_to_df <- function(path){
+    bam <- scanBam(path)
+    bam_field <- names(bam[[1]])
+    list_bam <- lapply(bam_field, function(y) .unlist(lapply(bam, "[[", y)))
+    bam_df <- do.call("DataFrame", list_bam)
+    names(bam_df) <- bam_field
+    bam_df <- data.frame(bam_df)
+    return(bam_df)
+  }
+  TE_library = readDNAStringSet(TE_library_path)
+  TE_length = TE_library[TE_library@ranges@NAMES == TE_name,]@ranges@width
+  TE_coverage = data.frame(position = c(1:TE_length), sense = 0, antisense = 0)
+  intervals = bam_to_df(bam_path)
+  print('Bam file successfully downloaded. Number of hits:')
+  print(nrow(intervals))
+  intervals = intervals[intervals$rname == TE_name,]
+  for (i in 1:nrow(intervals)){
+    if (intervals$strand[i] == '+'){
+      TE_coverage$sense[c(intervals$pos[i]:intervals$pos[i]+intervals$qwidth[i]-1)] =
+        TE_coverage$sense[c(intervals$pos[i]:intervals$pos[i]+intervals$qwidth[i]-1)] + 1
+    }
+    else {
+      TE_coverage$antisense[c(intervals$pos[i]:intervals$pos[i]+intervals$qwidth[i]-1)] =
+        TE_coverage$antisense[c(intervals$pos[i]:intervals$pos[i]+intervals$qwidth[i]-1)] + 1
+    }
+  if ((i %% 1000) == 0){
+    print(paste(100*i/nrow(intervals), 'percent done'))
+  }
+  }
+  
+  TE_coverage_melted = data.frame(position = rep(TE_coverage$position, 2), reads = c(TE_coverage$sense,
+                                                                                     TE_coverage$antisense),
+                                  label = c(rep('sense', nrow(TE_coverage)),
+                                            rep('antisense', nrow(TE_coverage))))
+  TE_coverage_melted$reads = TE_coverage_melted$reads / sum(TE_coverage_melted$reads)
+  TE_coverage_melted$reads[TE_coverage_melted$label == 'antisense'] = -1 * TE_coverage_melted$reads[TE_coverage_melted$label == 'antisense']
+  
+  plot = ggplot(data = TE_coverage_melted, aes(x = position, y= reads, col = label)) + 
+    geom_line() + 
+    theme_bw() + 
+    scale_color_manual(values = c("deepskyblue2", "tomato")) +
+    ggtitle(TE_name) +
+    xlab('Genomic coordinate') +
+    ylab('Scaled coverage') +
+    labs(col = 'Strand:')
+  return(plot)
+}
+
+plotcoverage('Acol_gypsy_Ele87#LTR/Gypsy',
+             '~/Anopheles/reference/TE_base/TE_library_josefa.fasta',
+             '~/Anopheles_part2/piRNA_and_siRNA/flag_4_V3/male_head_rep1_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.V3.ALL_ALIGNED_TE_JOSEFAAND_NO.sam.V3_to_TE.bam'
+             )
+
+
+
+plotcoverage('Polyphemus_full#DNA/TcMar-Tc1',
+             '/mnt/raid/pro_milka/TE_bases/44_TE/dvir_full-size_TEs.fasta',
+             '/mnt/raid/pro_milka/2021_year/Kelleher/piRNA_F2_to_genome_160/trimmed_smallRNA_data/SRR2096072_trimmed.fqF4.bam')
+
+
+GR = GRanges(seqnames = Josefa@ranges@NAMES, ranges =
+               IRanges(start = 1, width = Josefa@ranges@width), 
+             strand = '+')
+
+Josefa = readDNAStringSet('~/Anopheles/reference/TE_base/TE_library_josefa.fasta')
+which(Josefa@ranges@NAMES %in% 'Acol_gypsy_Ele87#LTR/Gypsy')
+Josefa$`Acol_gypsy_Ele87#LTR/Gypsy`
+
+
+a = bamCoverage(bampath = '~/Anopheles_part2/piRNA_and_siRNA/flag_4_V0/male_head_rep1_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.V0.ALL_ALIGNED_TE_JOSEFAAND_NO.sam.TE.V0.bam.SORTED.bam',
+              GR)
+
+plot(a[321])
+
+
+TE_coverage_melted = data.frame(position = rep(TE_coverage$position, 2), reads = c(TE_coverage$sense,
+                                                                                   TE_coverage$antisense),
+                                label = c(rep('sense', nrow(TE_coverage)),
+                                              rep('antisense', nrow(TE_coverage))))
+TE_coverage_melted$reads = TE_coverage_melted$reads / sum(TE_coverage_melted$reads)
+TE_coverage_melted$reads[TE_coverage_melted$label == 'antisense'] = -1 * TE_coverage_melted$reads[TE_coverage_melted$label == 'antisense']
+
+ggplot(data = TE_coverage_melted, aes(x = position, y= reads, col = label)) + 
+  geom_line() + 
+  theme_bw()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#ping pong signature:
+setwd('~/Anopheles_part2/piRNA_and_siRNA/flag_4/')
+mh1 = read.table('male_head_rep1_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam.F4.sam.SIGNATURE.OUT', header = TRUE)
+mh1 = ggplot(data = mh1, aes(x = overlap, y = z.score, fill = overlap_prob)) +
+  theme_bw() +
+  geom_bar(stat = 'identity') +
+  xlab('Overlap') +
+  ylab('Pairs') +
+  ggtitle('Male head rep1') +
+  theme(text = element_text(size = 15), legend.position = "none")
+
+mh2 = read.table('male_head_rep2_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam.F4.sam.SIGNATURE.OUT', header = TRUE)
+mh2 = ggplot(data = mh2, aes(x = overlap, y = z.score, fill = overlap_prob)) +
+  theme_bw() +
+  geom_bar(stat = 'identity') +
+  xlab('Overlap') +
+  ylab('Pairs') +
+  ggtitle('Male head rep2') +
+  theme(text = element_text(size = 15), legend.position = "none")
+
+mh3 = read.table('male_head_rep3_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam.F4.sam.SIGNATURE.OUT', header = TRUE)
+mh3 = ggplot(data = mh3, aes(x = overlap, y = z.score, fill = overlap_prob)) +
+  theme_bw() +
+  geom_bar(stat = 'identity') +
+  xlab('Overlap') +
+  ylab('Pairs') +
+  ggtitle('Male head rep3') +
+  theme(text = element_text(size = 15), legend.position = "none") 
+
+
+mt1 = read.table('male_thorax_rep1_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam.F4.sam.SIGNATURE.OUT', header = TRUE)
+mt1 = ggplot(data = mt1, aes(x = overlap, y = z.score, fill = overlap_prob)) +
+  theme_bw() +
+  geom_bar(stat = 'identity') +
+  xlab('Overlap') +
+  ylab('Pairs') +
+  ggtitle('Male thorax rep1') +
+  theme(text = element_text(size = 15), legend.position = "none") 
+
+
+mt2 = read.table('male_thorax_rep2_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam.F4.sam.SIGNATURE.OUT', header = TRUE)
+mt2 = ggplot(data = mt2, aes(x = overlap, y = z.score, fill = overlap_prob)) +
+  theme_bw() +
+  geom_bar(stat = 'identity') +
+  xlab('Overlap') +
+  ylab('Pairs') +
+  ggtitle('Male thorax rep2') +
+  theme(text = element_text(size = 15), legend.position = "none") 
+
+mt3 = read.table('male_thorax_rep3_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam.F4.sam.SIGNATURE.OUT', header = TRUE)
+mt3 = ggplot(data = mt3, aes(x = overlap, y = z.score, fill = overlap_prob)) +
+  theme_bw() +
+  geom_bar(stat = 'identity') +
+  xlab('Overlap') +
+  ylab('Pairs') +
+  ggtitle('Male thorax rep3') +
+  theme(text = element_text(size = 15), legend.position = "none") 
+
+
+fh1 = read.table('female_head_rep1_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam.F4.sam.SIGNATURE.OUT', header = TRUE)
+fh1 = ggplot(data = fh1, aes(x = overlap, y = z.score, fill = overlap_prob)) +
+  theme_bw() +
+  geom_bar(stat = 'identity') +
+  xlab('Overlap') +
+  ylab('Pairs') +
+  ggtitle('Female head rep1') +
+  theme(text = element_text(size = 15), legend.position = "none") 
+
+
+fh2 = read.table('female_head_rep2_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam.F4.sam.SIGNATURE.OUT', header = TRUE)
+fh2 = ggplot(data = fh2, aes(x = overlap, y = z.score, fill = overlap_prob)) +
+  theme_bw() +
+  geom_bar(stat = 'identity') +
+  xlab('Overlap') +
+  ylab('Pairs') +
+  ggtitle('Female head rep2') +
+  theme(text = element_text(size = 15), legend.position = "none") 
+
+
+fh3 = read.table('female_head_rep3_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam.F4.sam.SIGNATURE.OUT', header = TRUE)
+fh3 = ggplot(data = fh3, aes(x = overlap, y = z.score, fill = overlap_prob)) +
+  theme_bw() +
+  geom_bar(stat = 'identity') +
+  xlab('Overlap') +
+  ylab('Pairs') +
+  ggtitle('Female head rep3') +
+  theme(text = element_text(size = 15), legend.position = "none") 
+
+
+
+ft1 = read.table('female_thorax_rep1_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam.F4.sam.SIGNATURE.OUT', header = TRUE)
+ft1 = ggplot(data = ft1, aes(x = overlap, y = z.score, fill = overlap_prob)) +
+  theme_bw() +
+  geom_bar(stat = 'identity') +
+  xlab('Overlap') +
+  ylab('Pairs') +
+  ggtitle('Female thorax rep1') +
+  theme(text = element_text(size = 15), legend.position = "none") 
+
+
+ft2 = read.table('female_thorax_rep2_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam.F4.sam.SIGNATURE.OUT', header = TRUE)
+ft2 = ggplot(data = ft2, aes(x = overlap, y = z.score, fill = overlap_prob)) +
+  theme_bw() +
+  geom_bar(stat = 'identity') +
+  xlab('Overlap') +
+  ylab('Pairs') +
+  ggtitle('Female thorax rep2') +
+  theme(text = element_text(size = 15), legend.position = "none") 
+
+
+ft3_data = read.table('female_thorax_rep3_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam.F4.sam.SIGNATURE.OUT', header = TRUE)
+ft3 = ggplot(data = ft3_data, aes(x = overlap, y = z.score, fill = overlap_prob)) +
+  theme_bw() +
+  geom_bar(stat = 'identity') +
+  xlab('Overlap') +
+  ylab('Pairs') +
+  ggtitle('Female thorax rep3') +
+  theme(text = element_text(size = 15), legend.position = "none") 
+
+
+legend = ggplot(data = ft3_data, aes(x = overlap, y = z.score, fill = overlap_prob)) +
+  theme_bw() +
+  geom_bar(stat = 'identity') +
+  xlab('Overlap') +
+  ylab('Pairs') +
+  ggtitle('Female thorax rep3') +
+  theme(text = element_text(size = 15), legend.position = "bottom", legend.direction="vertical") +
+  labs(fill = 'Overlap probability')
+  
+
+
+extract_legend <- function(my_ggp) {
+  step1 <- ggplot_gtable(ggplot_build(my_ggp))
+  step2 <- which(sapply(step1$grobs, function(x) x$name) == "guide-box")
+  step3 <- step1$grobs[[step2]]
+  return(step3)
+}
+
+
+shared_legend = extract_legend(legend)
+
+library(gridExtra)
+gridExtra::grid.arrange(arrangeGrob(mh1, mh2, mh3, mt1, mt2, mt3, fh1, fh2, fh3, ft1, ft2, ft3, ncol = 3),
+                        shared_legend,
+                        nrow = 1,
+                        widths = c(10, 2), heights = c(15))
+
+
+
+#bias
+
+
+bias_function = function(DNA_fasta){
+  df = as.data.frame(DNA_fasta)
+  df$first = unlist(lapply(strsplit(df$x, ''), function(x)x[1]))
+  df$ten = unlist(lapply(strsplit(df$x, ''), function(x)x[10]))
+  first_table = as.data.frame(table(df$first))
+  ten_table = as.data.frame(table(df$ten))
+  first_table = first_table[order(first_table$Var1),]
+  ten_table = ten_table[order(ten_table$Var1),]
+  bias = data.frame(letter = rep(first_table$Var1, 2),
+                    position = c(rep('First', 4), rep('Ten', 4)),
+                    value = c(first_table$Freq,ten_table$Freq))
+  return(bias)
+}
+
+
+
+mh1 = readDNAStringSet('male_head_rep1_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam.F4.sam.fasta')
+mh1 = bias_function(mh1)
+mh1 = ggplot(data = mh1, aes(x = position, y = value, fill = letter)) +
+  geom_bar(stat = 'identity') + theme_bw() +
+  ggtitle('Male head 1')
+
+
+mh2 = readDNAStringSet('male_head_rep2_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam.F4.sam.fasta')
+mh2 = bias_function(mh2)
+mh2 = ggplot(data = mh2, aes(x = position, y = value, fill = letter)) +
+  geom_bar(stat = 'identity') + theme_bw() +
+  ggtitle('Male head 2')
+
+
+mh3 = readDNAStringSet('male_head_rep3_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam.F4.sam.fasta')
+mh3 = bias_function(mh3)
+mh3 = ggplot(data = mh3, aes(x = position, y = value, fill = letter)) +
+  geom_bar(stat = 'identity') + theme_bw() +
+  ggtitle('Male head 3')
+
+
+mt1 = readDNAStringSet('male_thorax_rep1_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam.F4.sam.fasta')
+mt1 = bias_function(mt1)
+mt1 = ggplot(data = mt1, aes(x = position, y = value, fill = letter)) +
+  geom_bar(stat = 'identity') + theme_bw() +
+  ggtitle('Male thorax 1')
+
+
+mt2 = readDNAStringSet('male_thorax_rep2_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam.F4.sam.fasta')
+mt2 = bias_function(mt2)
+mt2 = ggplot(data = mt2, aes(x = position, y = value, fill = letter)) +
+  geom_bar(stat = 'identity') + theme_bw() +
+  ggtitle('Male thorax 2')
+
+mt3 = readDNAStringSet('male_thorax_rep3_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam.F4.sam.fasta')
+mt3 = bias_function(mt3)
+mt3 = ggplot(data = mt3, aes(x = position, y = value, fill = letter)) +
+  geom_bar(stat = 'identity') + theme_bw() +
+  ggtitle('Male thorax 3')
+
+fh1 = readDNAStringSet('female_head_rep1_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam.F4.sam.fasta')
+fh1 = bias_function(fh1)
+fh1 = ggplot(data = fh1, aes(x = position, y = value, fill = letter)) +
+  geom_bar(stat = 'identity') + theme_bw() +
+  ggtitle('Female head 1')
+
+fh2 = readDNAStringSet('female_head_rep2_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam.F4.sam.fasta')
+fh2 = bias_function(fh2)
+fh2 = ggplot(data = fh2, aes(x = position, y = value, fill = letter)) +
+  geom_bar(stat = 'identity') + theme_bw() +
+  ggtitle('Female head 2')
+
+fh3 = readDNAStringSet('female_head_rep3_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam.F4.sam.fasta')
+fh3 = bias_function(fh3)
+fh3 = ggplot(data = fh3, aes(x = position, y = value, fill = letter)) +
+  geom_bar(stat = 'identity') + theme_bw() +
+  ggtitle('Female head 3')
+
+
+ft1 = readDNAStringSet('female_thorax_rep1_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam.F4.sam.fasta')
+ft1 = bias_function(ft1)
+ft1 = ggplot(data = ft1, aes(x = position, y = value, fill = letter)) +
+  geom_bar(stat = 'identity') + theme_bw() +
+  ggtitle('Female thorax 1')
+
+
+ft2 = readDNAStringSet('female_thorax_rep2_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam.F4.sam.fasta')
+ft2 = bias_function(ft2)
+ft2 = ggplot(data = ft2, aes(x = position, y = value, fill = letter)) +
+  geom_bar(stat = 'identity') + theme_bw() +
+  ggtitle('Female thorax 2')
+
+
+ft3 = readDNAStringSet('female_thorax_rep3_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam.F4.sam.fasta')
+ft3 = bias_function(ft3)
+ft3 = ggplot(data = ft3, aes(x = position, y = value, fill = letter)) +
+  geom_bar(stat = 'identity') + theme_bw() +
+  ggtitle('Female thorax 3')
+
+
+library(gridExtra)
+gridExtra::grid.arrange(arrangeGrob(mh1, mh2, mh3, mt1, mt2, mt3, fh1, fh2, fh3, ft1, ft2, ft3, ncol = 3),
+                        nrow = 1,
+                        widths = c(10), heights = c(15))
+
+
+#seqlogo
+
+
+#strand bias:
+
+library(bamsignals)
+library(GenomicRanges)
+Josefa = readDNAStringSet('~/Anopheles/reference/TE_base/TE_library_josefa.fasta')
+Josefa@ranges@NAMES[1]
+GR = GRanges(seqnames = Josefa@ranges@NAMES,
+             ranges = IRanges(
+               start = 1,
+               width = Josefa@ranges@width
+             ),
+             strand = '+')
+
+
+setwd('~/Anopheles_part2/piRNA_and_siRNA/flag_4_bam/')
+
+strand_function = function(bam, Name){
+  bc <- bamProfile(bampath = bam, 
+                 gr = GR, ss = T)
+
+  pi.pos <- unlist(lapply(bc, function(x)sum(x['sense',])))
+  pi.neg <- unlist(lapply(bc, function(x)sum(x['antisense',])))
+
+  df = data.frame(TE = unlist(lapply(strsplit(Josefa@ranges@NAMES, '#'), function(x)x[1])),
+                Sense = pi.pos,
+                Antisense = pi.neg)
+  
+  df$TE_name = ifelse(df$TE == 'Acol_R1_Ele16', 'Acol_R1_Ele16', NA)
+  
+  
+  gp = ggplot(data = df, aes(x = log10(Sense),
+                      y = log10(Antisense))) +
+  geom_label_repel(aes(label = df$TE_name),
+                   box.padding   = 0.2, 
+                   point.padding = 0.5,
+                   segment.color = 'grey50') +
+  geom_point() + theme_bw() +
+    ggtitle(Name)
+  
+  return(gp)
+}                
+                
+                
+mh1 = strand_function('male_head_rep1_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam.F4.bam.SORTED.bam',
+                      'Male head rep 1')     
+mh2 = strand_function('male_head_rep2_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam.F4.bam.SORTED.bam',
+                      'Male head rep 2') 
+mh3 = strand_function('male_head_rep3_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam.F4.bam.SORTED.bam',
+                      'Male head rep 3') 
+mt1 = strand_function('male_thorax_rep1_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam.F4.bam.SORTED.bam',
+                      'Male thorax rep 1')  
+mt2 = strand_function('male_thorax_rep2_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam.F4.bam.SORTED.bam',
+                      'Male thorax rep 2')  
+mt3 = strand_function('male_thorax_rep3_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam.F4.bam.SORTED.bam',
+                      'Male thorax rep 3')
+fh1 = strand_function('female_head_rep1_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam.F4.bam.SORTED.bam',
+                      'Female head rep 1')  
+fh2 = strand_function('female_head_rep2_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam.F4.bam.SORTED.bam',
+                      'Female head rep 2')  
+fh3 = strand_function('female_head_rep3_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam.F4.bam.SORTED.bam',
+                      'Female head rep 3')
+ft1 = strand_function('female_thorax_rep1_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam.F4.bam.SORTED.bam',
+                      'Female thorax rep 1') 
+ft2 = strand_function('female_thorax_rep2_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam.F4.bam.SORTED.bam',
+                      'Female thorax rep 2') 
+ft3 = strand_function('female_thorax_rep3_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam.F4.bam.SORTED.bam',
+                      'Female thorax rep 3') 
+
+
+
+library(gridExtra)
+gridExtra::grid.arrange(arrangeGrob(mh1, mh2, mh3, mt1, mt2, mt3, fh1, fh2, fh3, ft1, ft2, ft3, ncol = 3),
+                        nrow = 1,
+                        widths = c(10), heights = c(15))
+
+
+mh3
+
+
+require(ggseqlogo)
+
+data(ggseqlogo_sample)
+ggplot() + geom_logo( seqs_dna$MA0001.1 ) + theme_logo()
+seqs_dna$MA0001.1 
+
+
+
+#Сколько к каждому транспозону sense, antisense:
+#bias sense, antisense.
+
+
+
+.unlist <- function (x){
+  ## do.call(c, ...) coerces factor to integer, which is undesired
+  x1 <- x[[1L]]
+  if (is.factor(x1)){
+    structure(unlist(x), class = "factor", levels = levels(x1))
+  } else {
+    do.call(c, x)
+  }
+}
+bam_to_df <- function(path){
+  bam <- scanBam(path)
+  bam_field <- names(bam[[1]])
+  list_bam <- lapply(bam_field, function(y) .unlist(lapply(bam, "[[", y)))
+  bam_df <- do.call("DataFrame", list_bam)
+  names(bam_df) <- bam_field
+  bam_df <- data.frame(bam_df)
+  return(bam_df)
+}
+
+
+example = bam_to_df('~/Anopheles_part2/piRNA_and_siRNA/flag_4_bam/female_head_rep1_trimmed.fastq.ALL_ALIGNED_AND_NO.sam.fasta.sam.fasta.ALL_ALIGNED_TE_JOSEFAAND_NO.sam.F4.bam.SORTED.bam')
+View(example)
+
+table(example$strand)
+
+
+example_plus = example[example$strand == '+',]
+
+take_ten = function(DNAstring){
+  rez = paste(unlist(strsplit(as.character(DNAstring),''))[1:10],collapse="")
+  return(rez) 
+}
+
+example_plus$ten_letters = as.character(lapply(example_plus$seq, take_ten))
+ggplot() + geom_logo(example_plus$ten_letters) + theme_logo()
+
+
+example_minus = example[example$strand == '-',]
+example_minus$ten_letters = as.character(lapply(example_minus$seq, take_ten))
+ggplot() + geom_logo(example_minus$ten_letters) + theme_logo()
+
+
+example_minus = example[example$strand == '-',]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+######
+
+
+#miRNA aligned to lncRNA:
+
+setwd('~/Anopheles/filtered_from_xRNA_result_copy/bowtie_to_miRNA_result/aligned_miRNA_F4/fasta_aligned_to_miRNA/align_to_lncRNA_important_without_flag/aligned_F4/')
+mh1 = readDNAStringSet('male_head_rep1_filtered.fasta.sam.fasta.ALL_ALIGNED_lncRNA_AND_NO.sam.fasta')
+mh2 = readDNAStringSet('male_head_rep2_filtered.fasta.sam.fasta.ALL_ALIGNED_lncRNA_AND_NO.sam.fasta')
+mh3 = readDNAStringSet('male_head_rep3_filtered.fasta.sam.fasta.ALL_ALIGNED_lncRNA_AND_NO.sam.fasta')
+mt1 = readDNAStringSet('male_thorax_rep1_filtered.fasta.sam.fasta.ALL_ALIGNED_lncRNA_AND_NO.sam.fasta')
+mt2 = readDNAStringSet('male_thorax_rep2_filtered.fasta.sam.fasta.ALL_ALIGNED_lncRNA_AND_NO.sam.fasta')
+mt3 = readDNAStringSet('male_thorax_rep3_filtered.fasta.sam.fasta.ALL_ALIGNED_lncRNA_AND_NO.sam.fasta')
+
+fh1 = readDNAStringSet('female_head_rep1_filtered.fasta.sam.fasta.ALL_ALIGNED_lncRNA_AND_NO.sam.fasta')
+fh2 = readDNAStringSet('female_head_rep2_filtered.fasta.sam.fasta.ALL_ALIGNED_lncRNA_AND_NO.sam.fasta')
+fh3 = readDNAStringSet('female_head_rep3_filtered.fasta.sam.fasta.ALL_ALIGNED_lncRNA_AND_NO.sam.fasta')
+ft1 = readDNAStringSet('female_thorax_rep1_filtered.fasta.sam.fasta.ALL_ALIGNED_lncRNA_AND_NO.sam.fasta')
+ft2 = readDNAStringSet('female_thorax_rep2_filtered.fasta.sam.fasta.ALL_ALIGNED_lncRNA_AND_NO.sam.fasta')
+ft3 = readDNAStringSet('female_thorax_rep3_filtered.fasta.sam.fasta.ALL_ALIGNED_lncRNA_AND_NO.sam.fasta')
+
+
+pic_mh1 = ggplot(as.data.frame(mh1@ranges), aes(x = width)) + geom_density() + theme_bw() +
+  xlab('miRNA to lncRNA length') + ylab('Density') + ggtitle('Male head rep1, miRNA') + theme(text = element_text(size = 15))
+pic_mh2 = ggplot(as.data.frame(mh2@ranges), aes(x = width)) + geom_density() + theme_bw() +
+  xlab('miRNA to lncRNA length') + ylab('Density') + ggtitle('Male head rep2, miRNA') + theme(text = element_text(size = 15))
+pic_mh3 = ggplot(as.data.frame(mh3@ranges), aes(x = width)) + geom_density() + theme_bw() +
+  xlab('miRNA to lncRNA length') + ylab('Density') + ggtitle('Male head rep3, miRNA') + theme(text = element_text(size = 15))
+pic_mt1 = ggplot(as.data.frame(mt1@ranges), aes(x = width)) + geom_density() + theme_bw() +
+  xlab('miRNA to lncRNA length') + ylab('Density') + ggtitle('Male thorax rep1, miRNA') + theme(text = element_text(size = 15))
+pic_mt2 = ggplot(as.data.frame(mt2@ranges), aes(x = width)) + geom_density() + theme_bw() +
+  xlab('miRNA to lncRNA length') + ylab('Density') + ggtitle('Male thorax rep2, miRNA') + theme(text = element_text(size = 15))
+pic_mt3 = ggplot(as.data.frame(mt3@ranges), aes(x = width)) + geom_density() + theme_bw() +
+  xlab('miRNA to lncRNA length') + ylab('Density') + ggtitle('Male thorax rep3, miRNA') + theme(text = element_text(size = 15))
+
+pic_fh1 = ggplot(as.data.frame(fh1@ranges), aes(x = width)) + geom_density() + theme_bw() +
+  xlab('miRNA to lncRNA length') + ylab('Density') + ggtitle('Female head rep1, miRNA') + theme(text = element_text(size = 15))
+pic_fh2 = ggplot(as.data.frame(fh2@ranges), aes(x = width)) + geom_density() + theme_bw() +
+  xlab('miRNA to lncRNA length') + ylab('Density') + ggtitle('Female head rep2, miRNA') + theme(text = element_text(size = 15))
+pic_fh3 = ggplot(as.data.frame(fh3@ranges), aes(x = width)) + geom_density() + theme_bw() +
+  xlab('miRNA to lncRNA length') + ylab('Density') + ggtitle('Female head rep3, miRNA') + theme(text = element_text(size = 15))
+pic_ft1 = ggplot(as.data.frame(ft1@ranges), aes(x = width)) + geom_density() + theme_bw() +
+  xlab('miRNA to lncRNA length') + ylab('Density') + ggtitle('Female thorax rep1, miRNA') + theme(text = element_text(size = 15))
+pic_ft2 = ggplot(as.data.frame(ft2@ranges), aes(x = width)) + geom_density() + theme_bw() +
+  xlab('miRNA to lncRNA length') + ylab('Density') + ggtitle('Female thorax rep2, miRNA') + theme(text = element_text(size = 15))
+pic_ft3 = ggplot(as.data.frame(ft3@ranges), aes(x = width)) + geom_density() + theme_bw() +
+  xlab('miRNA to lncRNA length') + ylab('Density') + ggtitle('Female thorax rep3, miRNA') + theme(text = element_text(size = 15))
+
+grid.arrange(pic_mh1, pic_mh2, pic_mh3, pic_mt1, pic_mt2, pic_mt3, pic_fh1, pic_fh2, pic_fh3, pic_ft1, pic_ft2, pic_ft3, nrow = 4, ncol = 3)
+
+
+
+#miRNA NOT aligned to lncRNA:
+
+setwd('~/Anopheles/filtered_from_xRNA_result_copy/bowtie_to_miRNA_result/aligned_miRNA_F4/fasta_aligned_to_miRNA/align_to_lncRNA_important_without_flag/not_aligned_to_lncRNA/')
+mh1 = readDNAStringSet('male_head_rep1_filtered.fasta.sam.fasta.ALL_ALIGNED_lncRNA_AND_NO.sam.fasta')
+mh2 = readDNAStringSet('male_head_rep2_filtered.fasta.sam.fasta.ALL_ALIGNED_lncRNA_AND_NO.sam.fasta')
+mh3 = readDNAStringSet('male_head_rep3_filtered.fasta.sam.fasta.ALL_ALIGNED_lncRNA_AND_NO.sam.fasta')
+mt1 = readDNAStringSet('male_thorax_rep1_filtered.fasta.sam.fasta.ALL_ALIGNED_lncRNA_AND_NO.sam.fasta')
+mt2 = readDNAStringSet('male_thorax_rep2_filtered.fasta.sam.fasta.ALL_ALIGNED_lncRNA_AND_NO.sam.fasta')
+mt3 = readDNAStringSet('male_thorax_rep3_filtered.fasta.sam.fasta.ALL_ALIGNED_lncRNA_AND_NO.sam.fasta')
+
+fh1 = readDNAStringSet('female_head_rep1_filtered.fasta.sam.fasta.ALL_ALIGNED_lncRNA_AND_NO.sam.fasta')
+fh2 = readDNAStringSet('female_head_rep2_filtered.fasta.sam.fasta.ALL_ALIGNED_lncRNA_AND_NO.sam.fasta')
+fh3 = readDNAStringSet('female_head_rep3_filtered.fasta.sam.fasta.ALL_ALIGNED_lncRNA_AND_NO.sam.fasta')
+ft1 = readDNAStringSet('female_thorax_rep1_filtered.fasta.sam.fasta.ALL_ALIGNED_lncRNA_AND_NO.sam.fasta')
+ft2 = readDNAStringSet('female_thorax_rep2_filtered.fasta.sam.fasta.ALL_ALIGNED_lncRNA_AND_NO.sam.fasta')
+ft3 = readDNAStringSet('female_thorax_rep3_filtered.fasta.sam.fasta.ALL_ALIGNED_lncRNA_AND_NO.sam.fasta')
+
+
+pic_mh1 = ggplot(as.data.frame(mh1@ranges), aes(x = width)) + geom_density() + theme_bw() +
+  xlab('miRNA NOT to lncRNA length') + ylab('Density') + ggtitle('Male head rep1, miRNA') + theme(text = element_text(size = 15))
+pic_mh2 = ggplot(as.data.frame(mh2@ranges), aes(x = width)) + geom_density() + theme_bw() +
+  xlab('miRNA NOT to lncRNA length') + ylab('Density') + ggtitle('Male head rep2, miRNA') + theme(text = element_text(size = 15))
+pic_mh3 = ggplot(as.data.frame(mh3@ranges), aes(x = width)) + geom_density() + theme_bw() +
+  xlab('miRNA NOT to lncRNA length') + ylab('Density') + ggtitle('Male head rep3, miRNA') + theme(text = element_text(size = 15))
+pic_mt1 = ggplot(as.data.frame(mt1@ranges), aes(x = width)) + geom_density() + theme_bw() +
+  xlab('miRNA NOT to lncRNA length') + ylab('Density') + ggtitle('Male thorax rep1, miRNA') + theme(text = element_text(size = 15))
+pic_mt2 = ggplot(as.data.frame(mt2@ranges), aes(x = width)) + geom_density() + theme_bw() +
+  xlab('miRNA NOT to lncRNA length') + ylab('Density') + ggtitle('Male thorax rep2, miRNA') + theme(text = element_text(size = 15))
+pic_mt3 = ggplot(as.data.frame(mt3@ranges), aes(x = width)) + geom_density() + theme_bw() +
+  xlab('miRNA NOT to lncRNA length') + ylab('Density') + ggtitle('Male thorax rep3, miRNA') + theme(text = element_text(size = 15))
+
+pic_fh1 = ggplot(as.data.frame(fh1@ranges), aes(x = width)) + geom_density() + theme_bw() +
+  xlab('miRNA NOT to lncRNA length') + ylab('Density') + ggtitle('Female head rep1, miRNA') + theme(text = element_text(size = 15))
+pic_fh2 = ggplot(as.data.frame(fh2@ranges), aes(x = width)) + geom_density() + theme_bw() +
+  xlab('miRNA NOT to lncRNA length') + ylab('Density') + ggtitle('Female head rep2, miRNA') + theme(text = element_text(size = 15))
+pic_fh3 = ggplot(as.data.frame(fh3@ranges), aes(x = width)) + geom_density() + theme_bw() +
+  xlab('miRNA NOT to lncRNA length') + ylab('Density') + ggtitle('Female head rep3, miRNA') + theme(text = element_text(size = 15))
+pic_ft1 = ggplot(as.data.frame(ft1@ranges), aes(x = width)) + geom_density() + theme_bw() +
+  xlab('miRNA NOT to lncRNA length') + ylab('Density') + ggtitle('Female thorax rep1, miRNA') + theme(text = element_text(size = 15))
+pic_ft2 = ggplot(as.data.frame(ft2@ranges), aes(x = width)) + geom_density() + theme_bw() +
+  xlab('miRNA NOT to lncRNA length') + ylab('Density') + ggtitle('Female thorax rep2, miRNA') + theme(text = element_text(size = 15))
+pic_ft3 = ggplot(as.data.frame(ft3@ranges), aes(x = width)) + geom_density() + theme_bw() +
+  xlab('miRNA NOT to lncRNA length') + ylab('Density') + ggtitle('Female thorax rep3, miRNA') + theme(text = element_text(size = 15))
+
+grid.arrange(pic_mh1, pic_mh2, pic_mh3, pic_mt1, pic_mt2, pic_mt3, pic_fh1, pic_fh2, pic_fh3, pic_ft1, pic_ft2, pic_ft3, nrow = 4, ncol = 3)
+
+
+
+
+#align pi & si RNA to a genome, overlap with gtf file:
+
+.unlist <- function (x){
+  ## do.call(c, ...) coerces factor to integer, which is undesired
+  x1 <- x[[1L]]
+  if (is.factor(x1)){
+    structure(unlist(x), class = "factor", levels = levels(x1))
+  } else {
+    do.call(c, x)
+  }
+}
+bam_to_df <- function(path){
+  bam <- scanBam(path)
+  bam_field <- names(bam[[1]])
+  list_bam <- lapply(bam_field, function(y) .unlist(lapply(bam, "[[", y)))
+  bam_df <- do.call("DataFrame", list_bam)
+  names(bam_df) <- bam_field
+  bam_df <- data.frame(bam_df)
+  #bam_df$type <- ifelse(bam_df$qwidth == 21 | bam_df$qwidth == 22, 'siRNA', 
+  #                      ifelse((bam_df$qwidth >= 23 & bam_df$qwidth <= 30), 'piRNA', 'smth'))
+  #bam_df <- bam_df[bam_df$flag != 4,]
+  return(bam_df)
+}
+
+
+setwd('~/Anopheles/filtered_from_xRNA_result_copy/bowtie_to_miRNA_result/notmiRNA/fasta_notmirna/align_to_genome_without_flag/aligned_F4/')
+female_thorax_rep1 = bam_to_df('female_thorax_rep1_filtered.fasta.sam.fasta.ALL_ALIGNED_genome_AND_NO.sam')
+
+rna_ranges = GRanges(seqnames = female_thorax_rep1$rname, ranges = IRanges(start = female_thorax_rep1$pos, width = female_thorax_rep1$qwidth + 1))
+ann = rtracklayer::import('~/Anopheles/reference/genome/GCF_000005575.2_AgamP3_genomic.gtf')
+
+rna_annotate = subsetByOverlaps(rna_ranges, ann)
+length(rna_annotate)/length(rna_ranges)*100
+
+annotated_small = as.data.frame(subsetByOverlaps(ann, rna_ranges))
+table(annotated_small$type)
+
+df2 = NULL
+df2 <- annotated_small %>% group_by(type) %>% mutate(count_name_occurr = n())
+df2 = df2[complete.cases(df2$type),]
+
+library(ggplot2)
+ggplot(data = df2, aes(x = reorder(df2$type, -count_name_occurr))) + 
+  geom_bar(stat = "count") +
+  geom_bar(fill = 'cornflowerblue') + 
+  coord_flip() + 
+  theme_bw() +
+  theme(text = element_text(size = 15)) +
+  xlab('Feature type') + ylab('Number of alignments') + ggtitle('Alignments of piRNA and siRNA\nto AgamP3 genome')
+
+table(df2$gene_biotype)  
+
+
+##############################################################
+
+.unlist <- function (x){
+  ## do.call(c, ...) coerces factor to integer, which is undesired
+  x1 <- x[[1L]]
+  if (is.factor(x1)){
+    structure(unlist(x), class = "factor", levels = levels(x1))
+  } else {
+    do.call(c, x)
+  }
+}
+bam_to_df <- function(path){
+  bam <- scanBam(path)
+  bam_field <- names(bam[[1]])
+  list_bam <- lapply(bam_field, function(y) .unlist(lapply(bam, "[[", y)))
+  bam_df <- do.call("DataFrame", list_bam)
+  names(bam_df) <- bam_field
+  bam_df <- data.frame(bam_df)
+  return(bam_df)
+}
+
+
+plotcoverage_upd = function(TE_name, TE_library_path, bam_path){
+
+  TE_library = readDNAStringSet(TE_library_path)
+  TE_length = TE_library[TE_library@ranges@NAMES == TE_name,]@ranges@width
+  TE_coverage = data.frame(position = c(1:TE_length), sense = 0, antisense = 0)
+  intervals = bam_path
+  print('Bam file successfully downloaded. Number of hits at all:')
+  print(nrow(intervals))
+  intervals = intervals[intervals$rname == TE_name,]
+  print('Bam file successfully downloaded. Number of hits:')
+  print(nrow(intervals))
+  if (nrow(intervals) == 0){
+    plot = ggplot()
+    return(plot)
+  }
+  
+  for (i in 1:nrow(intervals)){
+    if (intervals$strand[i] == '+'){
+      TE_coverage$sense[c(intervals$pos[i]:intervals$pos[i]+intervals$qwidth[i]-1)] =
+        TE_coverage$sense[c(intervals$pos[i]:intervals$pos[i]+intervals$qwidth[i]-1)] + 1
+    }
+    else {
+      TE_coverage$antisense[c(intervals$pos[i]:intervals$pos[i]+intervals$qwidth[i]-1)] =
+        TE_coverage$antisense[c(intervals$pos[i]:intervals$pos[i]+intervals$qwidth[i]-1)] + 1
+    }
+    if ((i %% 1000) == 0){
+      print(paste(100*i/nrow(intervals), 'percent done'))
+    }
+  }
+  
+  TE_coverage_melted = data.frame(position = rep(TE_coverage$position, 2), reads = c(TE_coverage$sense,
+                                                                                     TE_coverage$antisense),
+                                  label = c(rep('sense', nrow(TE_coverage)),
+                                            rep('antisense', nrow(TE_coverage))))
+  TE_coverage_melted$reads = TE_coverage_melted$reads * 1000000 / nrow(intervals)
+  TE_coverage_melted$reads[TE_coverage_melted$label == 'antisense'] = -1 * TE_coverage_melted$reads[TE_coverage_melted$label == 'antisense']
+  
+  plot = ggplot(data = TE_coverage_melted, aes(x = position, y= reads, col = label)) + 
+    geom_line() + 
+    theme_classic() + 
+    scale_color_manual(values = c("deepskyblue2", "tomato")) +
+    ggtitle(TE_name) +
+    xlab('Genomic coordinate') +
+    ylab('Scaled coverage, RPM') +
+    labs(col = 'Strand:')
+  return(plot)
+}
+plot_signature = function(TE_name, TE_library_path, fasta_path){
+  setwd('/mnt/raid/pro_milka/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/ALL_THIS_STUFF/')
+  base = readDNAStringSet(TE_library_path)
+  TE = base[base@ranges@NAMES == TE_name]
+  writeXStringSet(TE, '/mnt/raid/pro_milka/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/ALL_THIS_STUFF/TE.fasta')
+  system(paste('bowtie-build /mnt/raid/pro_milka/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/ALL_THIS_STUFF/TE.fasta TE;
+         bowtie -f ', fasta_path, ' -v 0 --threads 64 --index /mnt/raid/pro_milka/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/ALL_THIS_STUFF/TE --sam > /mnt/raid/pro_milka/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/ALL_THIS_STUFF/align_without_flag.sam;
+         samtools view -h -F 4 /mnt/raid/pro_milka/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/ALL_THIS_STUFF/align_without_flag.sam > /mnt/raid/pro_milka/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/ALL_THIS_STUFF/result.sam;
+         python3 ~/soft/signature.py /mnt/raid/pro_milka/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/ALL_THIS_STUFF/result.sam 1 35 1 35 answer', sep =''), intern = F)
+  df = read.table('answer', header = TRUE)
+  system('rm /mnt/raid/pro_milka/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/ALL_THIS_STUFF/*', intern = F)
+  plot = ggplot(data = df, aes(x = overlap, y = z.score, fill = overlap_prob)) +
+    theme_classic() +
+    geom_bar(stat = 'identity') +
+    xlab('Overlap') +
+    ylab('Z-score') +
+    theme(text = element_text(size = 15), legend.position = "none")
+  return(plot)
+}
+#the same bam as in plot coverage
+plot_bias = function(TE_name, bam_path){
+
+  
+  take_ten = function(DNAstring){
+    rez = paste(unlist(strsplit(as.character(DNAstring),''))[1:10],collapse="")
+    return(rez) 
+  }
+  
+  intervals = bam_path
+  print('Bam file successfully downloaded. Number of hits at all:')
+  print(nrow(intervals))
+  intervals = intervals[intervals$rname == TE_name,]
+  print('Bam file successfully downloaded. Number of hits:')
+  print(nrow(intervals))
+  if (nrow(intervals) == 0){
+    plot = ggplot()
+    return(plot)
+  }
+  intervals_plus = intervals[intervals$strand == '+',]
+  intervals_minus = intervals[intervals$strand == '-',]
+  
+  if (nrow(intervals_plus) == 0){
+    plus = ggplot() + theme_void()
+  } else{
+    
+    intervals_plus$ten_letters = as.character(lapply(intervals_plus$seq, take_ten))
+    plus = ggplot() + geom_logo(intervals_plus$ten_letters) + theme_logo() + ggtitle('+ strand')
+  }
+  
+  if (nrow(intervals_minus) == 0){
+    minus = ggplot() + theme_void()
+  }
+  else{
+    intervals_minus$ten_letters = as.character(lapply(intervals_minus$seq, take_ten))
+    minus = ggplot() + geom_logo(intervals_minus$ten_letters) + theme_logo() + ggtitle('- strand')
+  }
+  
+  result = grid.arrange(plus, minus, nrow = 2)
+  return(result)
+}
+genes = read.table('/mnt/raid/sergey/bio-first/small_RNA/mosquito_project/genes_ids.txt')
+
+done = read.table('~/Anopheles_part3/GENES_PICTURES/F4_flag/picture_fast/names')
+done$gene = unlist(lapply(strsplit(as.character(done$V1), '.pdf'), function(x)x[1]))
+
+TE_names = genes$V1
+
+length(136:180)
+
+
+fh1_bam = bam_to_df('~/Anopheles_part3/GENES_PICTURES/F4_flag/female_head_rep1_trimmed.0.mm.coord.sorted.bam.flagF4.bam')
+fh2_bam = bam_to_df('~/Anopheles_part3/GENES_PICTURES/F4_flag/female_head_rep2_trimmed.0.mm.coord.sorted.bam.flagF4.bam')
+fh3_bam = bam_to_df('~/Anopheles_part3/GENES_PICTURES/F4_flag/female_head_rep3_trimmed.0.mm.coord.sorted.bam.flagF4.bam')
+ft1_bam = bam_to_df('~/Anopheles_part3/GENES_PICTURES/F4_flag/female_thorax_rep1_trimmed.0.mm.coord.sorted.bam.flagF4.bam')
+ft2_bam = bam_to_df('~/Anopheles_part3/GENES_PICTURES/F4_flag/female_thorax_rep2_trimmed.0.mm.coord.sorted.bam.flagF4.bam')
+ft3_bam = bam_to_df('~/Anopheles_part3/GENES_PICTURES/F4_flag/female_thorax_rep3_trimmed.0.mm.coord.sorted.bam.flagF4.bam')
+
+mh1_bam = bam_to_df('~/Anopheles_part3/GENES_PICTURES/F4_flag/male_head_rep1_trimmed.0.mm.coord.sorted.bam.flagF4.bam')
+mh2_bam = bam_to_df('~/Anopheles_part3/GENES_PICTURES/F4_flag/male_head_rep2_trimmed.0.mm.coord.sorted.bam.flagF4.bam')
+mh3_bam = bam_to_df('~/Anopheles_part3/GENES_PICTURES/F4_flag/male_head_rep3_trimmed.0.mm.coord.sorted.bam.flagF4.bam')
+mt1_bam = bam_to_df('~/Anopheles_part3/GENES_PICTURES/F4_flag/male_thorax_rep1_trimmed.0.mm.coord.sorted.bam.flagF4.bam')
+mt2_bam = bam_to_df('~/Anopheles_part3/GENES_PICTURES/F4_flag/male_thorax_rep2_trimmed.0.mm.coord.sorted.bam.flagF4.bam')
+mt3_bam = bam_to_df('~/Anopheles_part3/GENES_PICTURES/F4_flag/male_thorax_rep3_trimmed.0.mm.coord.sorted.bam.flagF4.bam')
+
+
+for (i in 136:length(TE_names)){
+  
+  coverage = plotcoverage_upd(TE_names[i],'/mnt/raid/sergey/bio-first/small_RNA/mosquito_project/selected_RPM20.fa',
+                              fh1_bam)
+  signature = plot_signature(TE_names[i], '/mnt/raid/sergey/bio-first/small_RNA/mosquito_project/selected_RPM20.fa',
+                             '~/Anopheles_part3/GENES_PICTURES/F4_flag/female_head_rep1_trimmed.0.mm.coord.sorted.bam.flagF4.bam.fasta')
+  bias = plot_bias(TE_names[i], 
+                   fh1_bam)
+  fh1 = arrangeGrob(coverage, signature, bias, nrow = 1, top = 'Female head 1')
+  
+  #
+  
+
+  coverage = plotcoverage_upd(TE_names[i],'/mnt/raid/sergey/bio-first/small_RNA/mosquito_project/selected_RPM20.fa',
+                              fh2_bam)
+  signature = plot_signature(TE_names[i], '/mnt/raid/sergey/bio-first/small_RNA/mosquito_project/selected_RPM20.fa',
+                             '~/Anopheles_part3/GENES_PICTURES/F4_flag/female_head_rep2_trimmed.0.mm.coord.sorted.bam.flagF4.bam.fasta')
+  bias = plot_bias(TE_names[i], 
+                   fh2_bam)
+  
+  fh2 = arrangeGrob(coverage, signature, bias, nrow = 1, top = 'Female head 2')
+  #
+  
+
+  coverage = plotcoverage_upd(TE_names[i],'/mnt/raid/sergey/bio-first/small_RNA/mosquito_project/selected_RPM20.fa',
+                              fh3_bam)
+  signature = plot_signature(TE_names[i], '/mnt/raid/sergey/bio-first/small_RNA/mosquito_project/selected_RPM20.fa',
+                             '~/Anopheles_part3/GENES_PICTURES/F4_flag/female_head_rep3_trimmed.0.mm.coord.sorted.bam.flagF4.bam.fasta')
+  bias = plot_bias(TE_names[i], 
+                   fh3_bam)
+  
+  fh3 = arrangeGrob(coverage, signature, bias, nrow = 1, top = 'Female head 3')
+  
+  #
+  
+  coverage = plotcoverage_upd(TE_names[i],'/mnt/raid/sergey/bio-first/small_RNA/mosquito_project/selected_RPM20.fa',
+                              ft1_bam)
+  signature = plot_signature(TE_names[i], '/mnt/raid/sergey/bio-first/small_RNA/mosquito_project/selected_RPM20.fa',
+                             '~/Anopheles_part3/GENES_PICTURES/F4_flag/female_thorax_rep1_trimmed.0.mm.coord.sorted.bam.flagF4.bam.fasta')
+  bias = plot_bias(TE_names[i], 
+                   ft1_bam)
+  
+  ft1 = arrangeGrob(coverage, signature, bias, nrow = 1, top = 'Female thorax 1')
+  
+  #
+  
+
+  coverage = plotcoverage_upd(TE_names[i],'/mnt/raid/sergey/bio-first/small_RNA/mosquito_project/selected_RPM20.fa',
+                              ft2_bam)
+  signature = plot_signature(TE_names[i], '/mnt/raid/sergey/bio-first/small_RNA/mosquito_project/selected_RPM20.fa',
+                             '~/Anopheles_part3/GENES_PICTURES/F4_flag/female_thorax_rep2_trimmed.0.mm.coord.sorted.bam.flagF4.bam.fasta')
+  bias = plot_bias(TE_names[i], 
+                   ft2_bam)
+  
+  
+  ft2 = arrangeGrob(coverage, signature, bias, nrow = 1, top = 'Female thorax 2')
+  #
+  
+  coverage = plotcoverage_upd(TE_names[i],'/mnt/raid/sergey/bio-first/small_RNA/mosquito_project/selected_RPM20.fa',
+                              ft3_bam)
+  signature = plot_signature(TE_names[i], '/mnt/raid/sergey/bio-first/small_RNA/mosquito_project/selected_RPM20.fa',
+                             '~/Anopheles_part3/GENES_PICTURES/F4_flag/female_thorax_rep3_trimmed.0.mm.coord.sorted.bam.flagF4.bam.fasta')
+  bias = plot_bias(TE_names[i], 
+                   ft3_bam)
+  
+  
+ft3 = arrangeGrob(coverage, signature, bias, nrow = 1, top = 'Female thorax 3')
+  #
+  
+
+coverage = plotcoverage_upd(TE_names[i],'/mnt/raid/sergey/bio-first/small_RNA/mosquito_project/selected_RPM20.fa',
+                            mh1_bam)
+signature = plot_signature(TE_names[i], '/mnt/raid/sergey/bio-first/small_RNA/mosquito_project/selected_RPM20.fa',
+                           '~/Anopheles_part3/GENES_PICTURES/F4_flag/male_head_rep1_trimmed.0.mm.coord.sorted.bam.flagF4.bam.fasta')
+bias = plot_bias(TE_names[i], 
+                mh1_bam)
+
+
+  mh1 = arrangeGrob(coverage, signature, bias, nrow = 1, top = 'Male head 1')
+  #
+  
+  coverage = plotcoverage_upd(TE_names[i],'/mnt/raid/sergey/bio-first/small_RNA/mosquito_project/selected_RPM20.fa',
+                              mh2_bam)
+  signature = plot_signature(TE_names[i], '/mnt/raid/sergey/bio-first/small_RNA/mosquito_project/selected_RPM20.fa',
+                             '~/Anopheles_part3/GENES_PICTURES/F4_flag/male_head_rep2_trimmed.0.mm.coord.sorted.bam.flagF4.bam.fasta')
+  bias = plot_bias(TE_names[i], 
+                   mh2_bam)
+  mh2 = arrangeGrob(coverage, signature, bias, nrow = 1, top = 'Male head 2')
+  #
+  
+
+  
+  coverage = plotcoverage_upd(TE_names[i],'/mnt/raid/sergey/bio-first/small_RNA/mosquito_project/selected_RPM20.fa',
+                              mh3_bam)
+  signature = plot_signature(TE_names[i], '/mnt/raid/sergey/bio-first/small_RNA/mosquito_project/selected_RPM20.fa',
+                             '~/Anopheles_part3/GENES_PICTURES/F4_flag/male_head_rep3_trimmed.0.mm.coord.sorted.bam.flagF4.bam.fasta')
+  bias = plot_bias(TE_names[i], 
+                   mh3_bam)
+  
+  
+mh3 = arrangeGrob(coverage, signature, bias, nrow = 1, top = 'Male head 3')
+  #
+
+
+
+coverage = plotcoverage_upd(TE_names[i],'/mnt/raid/sergey/bio-first/small_RNA/mosquito_project/selected_RPM20.fa',
+                            mt1_bam)
+signature = plot_signature(TE_names[i], '/mnt/raid/sergey/bio-first/small_RNA/mosquito_project/selected_RPM20.fa',
+                           '~/Anopheles_part3/GENES_PICTURES/F4_flag/male_thorax_rep1_trimmed.0.mm.coord.sorted.bam.flagF4.bam.fasta')
+bias = plot_bias(TE_names[i], 
+                 mt1_bam)
+
+
+  mt1 = arrangeGrob(coverage, signature, bias, nrow = 1, top = 'Male thorax 1')
+  
+  #
+  
+
+  coverage = plotcoverage_upd(TE_names[i],'/mnt/raid/sergey/bio-first/small_RNA/mosquito_project/selected_RPM20.fa',
+                              mt2_bam)
+  signature = plot_signature(TE_names[i], '/mnt/raid/sergey/bio-first/small_RNA/mosquito_project/selected_RPM20.fa',
+                             '~/Anopheles_part3/GENES_PICTURES/F4_flag/male_thorax_rep2_trimmed.0.mm.coord.sorted.bam.flagF4.bam.fasta')
+  bias = plot_bias(TE_names[i], 
+                   mt2_bam)
+  
+  mt2 = arrangeGrob(coverage, signature, bias, nrow = 1, top = 'Male thorax 2')
+  #
+ 
+  
+  
+  
+  coverage = plotcoverage_upd(TE_names[i],'/mnt/raid/sergey/bio-first/small_RNA/mosquito_project/selected_RPM20.fa',
+                              mt3_bam)
+  signature = plot_signature(TE_names[i], '/mnt/raid/sergey/bio-first/small_RNA/mosquito_project/selected_RPM20.fa',
+                             '~/Anopheles_part3/GENES_PICTURES/F4_flag/male_thorax_rep3_trimmed.0.mm.coord.sorted.bam.flagF4.bam.fasta')
+  bias = plot_bias(TE_names[i], 
+                   mt3_bam)
+  
+  mt3 = arrangeGrob(coverage, signature, bias, nrow = 1, top = 'Male thorax 3')
+  
+  
+  #
+  
+  g = grid.arrange(fh1, fh2, fh3, ft1, ft2, ft3, mh1, mh2, mh3, mt1, mt2, mt3, nrow = 12)
+
+  setwd('/mnt/raid/pro_milka/Anopheles_part3/GENES_PICTURES/F4_flag/picture_fast')
+  ggsave(paste(TE_names[i],'.pdf',sep=''), width = 25, height = 80, units = "cm", g)
+}
+
+
+
+
+
