@@ -1,0 +1,1196 @@
+library(Biostrings)
+library(ORFik)
+
+
+ORFs_in_TE = function(path_to_out_masker, path_to_genome, base_path, NAME, count){
+  base = readDNAStringSet(base_path)
+  #TE = data.frame(TE = base@ranges@NAMES, '#', width = base@ranges@width)
+  TE = data.frame(TE = unlist(lapply(strsplit(base@ranges@NAMES, '#'), function(x)x[1])), width = base@ranges@width)
+  #TE = data.frame(TE = unlist(lapply(strsplit(base@ranges@NAMES, '\t'), function(x)x[1])), width = base@ranges@width)
+  
+  Neutral = read.table(path_to_out_masker, fill = T)
+  rows = nrow(Neutral)
+  Neutral = Neutral[c(3:rows),]
+  Neutral = na.omit(Neutral)
+  Neutral = Neutral[,1:11]
+  print(paste(rows, 'rows in initial data'))
+  genome = readDNAStringSet(path_to_genome)
+#  genome@ranges@NAMES = paste(genome@ranges@NAMES,'_',sep='')
+  
+  Neutral$TE_width = TE[match(as.character(Neutral$V10), TE$TE),]$width
+
+  Neutral$range = as.numeric(as.character(Neutral$V7)) - as.numeric(as.character(Neutral$V6))
+  Neutral$percent = as.numeric(as.character(Neutral$range))/as.numeric(as.character(Neutral$TE_width)) * 100
+  Neutral <- Neutral[as.numeric(as.character(Neutral$percent)) >= 90,]
+  Neutral = na.omit(Neutral)
+  
+  print(paste(nrow(Neutral), 'rows in filtered data'))
+  print(table(Neutral$V5 %in% names(genome)))
+  
+  
+  Neutral$contig_length = ifelse(Neutral$V5 %in% names(genome), width(genome[match(Neutral$V5, names(genome))]))
+  Neutral <- Neutral[(as.numeric(as.character(Neutral$V6)) > (count-1)) & (Neutral$contig_length - as.numeric(as.character(Neutral$V7)) > (count+1)),]
+  
+  
+  TE_table = data.frame(table(as.character(Neutral$V10)))
+  TE_table$class = Neutral[match(TE_table$Var1, as.character(Neutral$V10)),]$V11
+  
+  ggplot(data = TE_table, aes(x = reorder(Var1, Freq), y = Freq, fill = class)) +
+    geom_bar(stat="identity") + 
+    coord_flip() +
+    theme_bw() + ggtitle(paste('Number of copies at least 90%, RepeatMasker\ngenome:', NAME)) +
+    xlab('TE copy number') +
+    ylab('TE name') +
+    labs(fill = 'TE class') + 
+    theme(text = element_text(size = 15))
+  
+  ggsave(filename = paste(NAME,'.png'), width = 20, height = 30, units = "cm", path = '/mnt/raid/pro_milka/2022_TE_base_160/initialbase_frame_results/')
+  
+  Neutral_GR = GRanges(seqnames = as.character(Neutral$V5), ranges = IRanges(start = as.numeric(as.character(Neutral$V6))-count,
+                                                                             end = as.numeric(as.character(Neutral$V7))+count),
+                       strand = ifelse(as.character(Neutral$V9) == '+', '+', '-'),
+                       Element = as.character(Neutral$V10),
+                       class = as.character(Neutral$V11),
+                       percent = Neutral$percent, sequence = NA)
+  
+  Neutral_GR$sequence = getSeq(genome, Neutral_GR)
+  
+  for (i in 1:length(Neutral_GR)){
+    Neutral_GR$PLUS_MAX[i] = max(unlist(findORFs(as.character(Neutral_GR$sequence[i]), startCodon = "ATG", minimumLength = 0))@width)
+    Neutral_GR$MINUS_MAX[i] = max(unlist(findORFs(as.character(reverseComplement(Neutral_GR$sequence[i])), startCodon = "ATG", minimumLength = 0))@width)
+  }
+  
+  Neutral_GR$Number = 1:length(Neutral_GR) 
+  TE_table$best_ORF_number = NA
+  TE_table$ORF_length = NA
+  TE_table$base_ORF_length = NA
+  TE_table$strand = NA
+  
+  base@ranges@NAMES = unlist(lapply(strsplit(base@ranges@NAMES, '#'), function(x)x[1]))
+#
+    for (i in 1:nrow(TE_table)){
+    TE_table$base_ORF_length[i] = max(unlist(findORFs(as.character(base[base@ranges@NAMES == TE_table$Var1[i],]), startCodon = "ATG", minimumLength = 0))@width)
+  }
+#  
+  for (i in 1:nrow(TE_table)){
+    TE_table$ORF_length[i] = max(Neutral_GR[Neutral_GR$Element == TE_table$Var1[i],]$PLUS_MAX)
+    TE_table$strand[i] = as.character(strand(Neutral_GR[(Neutral_GR$PLUS_MAX == max(Neutral_GR[Neutral_GR$Element == TE_table$Var1[i],]$PLUS_MAX)) &
+                                                          Neutral_GR$Element  == TE_table$Var1[i],]))[1]
+    
+    
+    TE_table$best_ORF_number[i] = Neutral_GR[(Neutral_GR$PLUS_MAX == max(Neutral_GR[Neutral_GR$Element == TE_table$Var1[i],]$PLUS_MAX)) &
+                                               Neutral_GR$Element  == TE_table$Var1[i],]$Number[1]
+    
+  }
+  return(TE_table)
+}
+ORFs_in_TE_2 = function(path_to_out_masker, path_to_genome, base_path, NAME, count){
+  base = readDNAStringSet(base_path)
+  #TE = data.frame(TE = base@ranges@NAMES, '#', width = base@ranges@width)
+  TE = data.frame(TE = unlist(lapply(strsplit(base@ranges@NAMES, '#'), function(x)x[1])), width = base@ranges@width)
+  #TE = data.frame(TE = unlist(lapply(strsplit(base@ranges@NAMES, '\t'), function(x)x[1])), width = base@ranges@width)
+  
+  Neutral = read.table(path_to_out_masker, fill = T)
+  rows = nrow(Neutral)
+  Neutral = Neutral[c(3:rows),]
+  Neutral = na.omit(Neutral)
+  Neutral = Neutral[,1:11]
+  print(paste(rows, 'rows in initial data'))
+  genome = readDNAStringSet(path_to_genome)
+#  genome@ranges@NAMES = paste(genome@ranges@NAMES,'_',sep='')
+  
+  Neutral$TE_width = TE[match(as.character(Neutral$V10), TE$TE),]$width
+  
+  Neutral$range = as.numeric(as.character(Neutral$V7)) - as.numeric(as.character(Neutral$V6))
+  Neutral$percent = as.numeric(as.character(Neutral$range))/as.numeric(as.character(Neutral$TE_width)) * 100
+  Neutral <- Neutral[as.numeric(as.character(Neutral$percent)) >= 90,]
+  Neutral = na.omit(Neutral)
+  
+  print(paste(nrow(Neutral), 'rows in filtered data'))
+  print(table(Neutral$V5 %in% names(genome)))
+  
+  
+  Neutral$contig_length = ifelse(Neutral$V5 %in% names(genome), width(genome[match(Neutral$V5, names(genome))]))
+  Neutral <- Neutral[(as.numeric(as.character(Neutral$V6)) > (count-1)) & (Neutral$contig_length - as.numeric(as.character(Neutral$V7)) > (count+1)),]
+  
+  
+  TE_table = data.frame(table(as.character(Neutral$V10)))
+  TE_table$class = Neutral[match(TE_table$Var1, as.character(Neutral$V10)),]$V11
+  
+  ggplot(data = TE_table, aes(x = reorder(Var1, Freq), y = Freq, fill = class)) +
+    geom_bar(stat="identity") + 
+    coord_flip() +
+    theme_bw() + ggtitle(paste('Number of copies at least 90%, RepeatMasker\ngenome:', NAME)) +
+    xlab('TE copy number') +
+    ylab('TE name') +
+    labs(fill = 'TE class') + 
+    theme(text = element_text(size = 15))
+  
+ # ggsave(filename = paste(NAME,'.png'), path = '/mnt/raid/pro_milka/2022_TE_base_160/initialbase_frame_results/')
+  
+  Neutral_GR = GRanges(seqnames = as.character(Neutral$V5), ranges = IRanges(start = as.numeric(as.character(Neutral$V6))-count,
+                                                                             end = as.numeric(as.character(Neutral$V7))+count),
+                       strand = ifelse(as.character(Neutral$V9) == '+', '+', '-'),
+                       Element = as.character(Neutral$V10),
+                       class = as.character(Neutral$V11),
+                       percent = Neutral$percent, sequence = NA)
+  
+  Neutral_GR$sequence = getSeq(genome, Neutral_GR)
+  
+  for (i in 1:length(Neutral_GR)){
+    Neutral_GR$PLUS_MAX[i] = max(unlist(findORFs(as.character(Neutral_GR$sequence[i]), startCodon = "ATG", minimumLength = 0))@width)
+    Neutral_GR$MINUS_MAX[i] = max(unlist(findORFs(as.character(reverseComplement(Neutral_GR$sequence[i])), startCodon = "ATG", minimumLength = 0))@width)
+  }
+  
+  Neutral_GR$Number = 1:length(Neutral_GR) 
+  TE_table$best_ORF_number = NA
+  TE_table$ORF_length = NA
+  TE_table$base_ORF_length = NA
+  TE_table$strand = NA
+  
+  base@ranges@NAMES = unlist(lapply(strsplit(base@ranges@NAMES, '#'), function(x)x[1]))
+  #
+  for (i in 1:nrow(TE_table)){
+    TE_table$base_ORF_length[i] = max(unlist(findORFs(as.character(base[base@ranges@NAMES == TE_table$Var1[i],]), startCodon = "ATG", minimumLength = 0))@width)
+  }
+  #  
+  for (i in 1:nrow(TE_table)){
+    TE_table$ORF_length[i] = max(Neutral_GR[Neutral_GR$Element == TE_table$Var1[i],]$PLUS_MAX)
+    TE_table$strand[i] = as.character(strand(Neutral_GR[(Neutral_GR$PLUS_MAX == max(Neutral_GR[Neutral_GR$Element == TE_table$Var1[i],]$PLUS_MAX)) &
+                                                          Neutral_GR$Element  == TE_table$Var1[i],]))[1]
+    
+    
+    TE_table$best_ORF_number[i] = Neutral_GR[(Neutral_GR$PLUS_MAX == max(Neutral_GR[Neutral_GR$Element == TE_table$Var1[i],]$PLUS_MAX)) &
+                                               Neutral_GR$Element  == TE_table$Var1[i],]$Number[1]
+    
+  }
+  return(Neutral_GR)
+}
+
+
+#####3compare 6 TE between 101N and M:
+N_table = ORFs_in_TE('~/RepeatMasker_for_all_new_base_TE/N_101/assembly.fasta.out',
+                     '~/GENOME_ASSEMBLIES_ONT/101N_genome_assembly/assembly.fasta',
+                     '~/2022_TE_base_160/READY_BASE/transposons_ORFs_160.fasta',
+                     '101N', 2)
+
+N_GR = ORFs_in_TE_2('~/RepeatMasker_for_all_new_base_TE/N_101/assembly.fasta.out',
+                    '~/GENOME_ASSEMBLIES_ONT/101N_genome_assembly/assembly.fasta',
+                    '~/2022_TE_base_160/READY_BASE/transposons_ORFs_160.fasta',
+                    '101N', 2)
+
+
+table_M = ORFs_in_TE('~/RepeatMasker_for_all_new_base_TE/101M/assembly.fasta.out',
+                     '~/GENOME_ASSEMBLIES_ONT/ASSEMBLY_101M/assembly.fasta',
+                     '~/2022_TE_base_160/READY_BASE/transposons_ORFs_160.fasta',
+                     '101M', 2)
+
+GR_M = ORFs_in_TE_2('~/RepeatMasker_for_all_new_base_TE/101M/assembly.fasta.out',
+                    '~/GENOME_ASSEMBLIES_ONT/ASSEMBLY_101M/assembly.fasta',
+                    '~/2022_TE_base_160/READY_BASE/transposons_ORFs_160.fasta',
+                    '101M', 2)
+
+View(as.data.frame(GR_M))
+View(as.data.frame(N_GR))
+
+
+
+
+
+
+
+
+P_1_0 = ORFs_in_TE('~/2022_TE_base_160/spring/160_chromosome_NAMES.fasta.out',
+                 '~/160_chromosome_assembly/160_chromosome_NAMES.fasta',
+                 '~/2022_TE_base_160/spring/spring_13_TE.fasta',
+                 '160',
+                 0)
+
+P_2_100 = ORFs_in_TE_2('~/2022_TE_base_160/spring/160_chromosome_NAMES.fasta.out',
+               '~/160_chromosome_assembly/160_chromosome_NAMES.fasta',
+               '~/2022_TE_base_160/spring/spring_13_TE.fasta',
+               '160',
+               0)
+
+View(as.data.frame(P_2_100))
+
+
+P_1_0 = P_1_0[P_1_0$ORF_length != P_1_0$base_ORF_length,]
+
+#################
+
+
+
+drow_TE = function(path_to_out_masker, base_path, NAME){
+  base = readDNAStringSet(base_path)
+  #TE = data.frame(TE = base@ranges@NAMES, '#', width = base@ranges@width)
+  TE = data.frame(TE = unlist(lapply(strsplit(base@ranges@NAMES, '#'), function(x)x[1])), width = base@ranges@width)
+  #TE = data.frame(TE = unlist(lapply(strsplit(base@ranges@NAMES, '\t'), function(x)x[1])), width = base@ranges@width)
+  
+  Neutral = read.table(path_to_out_masker, fill = T)
+  rows = nrow(Neutral)
+  Neutral = Neutral[c(3:rows),]
+  Neutral = na.omit(Neutral)
+  Neutral = Neutral[,1:11]
+  print(paste(rows, 'rows in initial data'))
+  #  genome@ranges@NAMES = paste(genome@ranges@NAMES,'_',sep='')
+  
+  Neutral$TE_width = TE[match(as.character(Neutral$V10), TE$TE),]$width
+  
+  Neutral$range = as.numeric(as.character(Neutral$V7)) - as.numeric(as.character(Neutral$V6))
+  Neutral$percent = as.numeric(as.character(Neutral$range))/as.numeric(as.character(Neutral$TE_width)) * 100
+  Neutral <- Neutral[as.numeric(as.character(Neutral$percent)) >= 90,]
+  Neutral = na.omit(Neutral)
+  
+  TE_table = data.frame(table(as.character(Neutral$V10)))
+  TE_table$class = Neutral[match(TE_table$Var1, as.character(Neutral$V10)),]$V11
+  TE_table$class = ifelse(startsWith(as.character(TE_table$class), 'DNA'), 'DNA', as.character(TE_table$class))
+  TE_table$class = ifelse(startsWith(as.character(TE_table$class), 'LINE'), 'LINE', as.character(TE_table$class))
+  TE_table$class = ifelse(startsWith(as.character(TE_table$class), 'LTR'), 'LTR', as.character(TE_table$class))
+  TE_table$class = as.factor(TE_table$class)
+  
+  ggplot(data = TE_table, aes(x = reorder(Var1, Freq), y = Freq, fill = class)) +
+    geom_bar(stat="identity") + 
+    coord_flip() +
+    theme_bw() + ggtitle(paste('Number of copies at least 90%, RepeatMasker\ngenome:', NAME)) +
+    xlab('TE copy number') +
+    ylab('TE name') +
+    labs(fill = 'TE class') + 
+    theme(text = element_text(size = 15)) + facet_wrap(.~class, scales = 'free')
+  
+}
+TE = function(path_to_out_masker, base_path, NAME){
+  base = readDNAStringSet(base_path)
+  #TE = data.frame(TE = base@ranges@NAMES, '#', width = base@ranges@width)
+  TE = data.frame(TE = unlist(lapply(strsplit(base@ranges@NAMES, '#'), function(x)x[1])), width = base@ranges@width)
+  #TE = data.frame(TE = unlist(lapply(strsplit(base@ranges@NAMES, '\t'), function(x)x[1])), width = base@ranges@width)
+  
+  Neutral = read.table(path_to_out_masker, fill = T)
+  rows = nrow(Neutral)
+  Neutral = Neutral[c(3:rows),]
+  Neutral = na.omit(Neutral)
+  Neutral = Neutral[,1:11]
+  print(paste(rows, 'rows in initial data'))
+  #  genome@ranges@NAMES = paste(genome@ranges@NAMES,'_',sep='')
+  
+  Neutral$TE_width = TE[match(as.character(Neutral$V10), TE$TE),]$width
+  
+  Neutral$range = as.numeric(as.character(Neutral$V7)) - as.numeric(as.character(Neutral$V6))
+  Neutral$percent = as.numeric(as.character(Neutral$range))/as.numeric(as.character(Neutral$TE_width)) * 100
+  Neutral <- Neutral[as.numeric(as.character(Neutral$percent)) >= 90,]
+  Neutral = na.omit(Neutral)
+  
+  TE_table = data.frame(table(as.character(Neutral$V10)))
+  TE_table$class = Neutral[match(TE_table$Var1, as.character(Neutral$V10)),]$V11
+  TE_table$class = ifelse(startsWith(as.character(TE_table$class), 'DNA'), 'DNA', as.character(TE_table$class))
+  TE_table$class = ifelse(startsWith(as.character(TE_table$class), 'LINE'), 'LINE', as.character(TE_table$class))
+  TE_table$class = ifelse(startsWith(as.character(TE_table$class), 'LTR'), 'LTR', as.character(TE_table$class))
+  TE_table$class = as.factor(TE_table$class)
+  return(TE_table)
+
+}
+calculate_ORFs = function(path_to_out_masker, path_to_genome, base_path, NAME){
+  count = 2
+  base = readDNAStringSet(base_path)
+  TE = data.frame(TE = unlist(lapply(strsplit(base@ranges@NAMES, '#'), function(x)x[1])), width = base@ranges@width)
+  Neutral = read.table(path_to_out_masker, fill = T)
+  rows = nrow(Neutral)
+  Neutral = Neutral[c(3:rows),]
+  Neutral = na.omit(Neutral)
+  Neutral = Neutral[,1:11]
+  genome = readDNAStringSet(path_to_genome)
+  #  genome@ranges@NAMES = paste(genome@ranges@NAMES,'_',sep='')
+  
+  Neutral$TE_width = TE[match(as.character(Neutral$V10), TE$TE),]$width
+  
+  Neutral$range = as.numeric(as.character(Neutral$V7)) - as.numeric(as.character(Neutral$V6))
+  Neutral$percent = as.numeric(as.character(Neutral$range))/as.numeric(as.character(Neutral$TE_width)) * 100
+  Neutral <- Neutral[as.numeric(as.character(Neutral$percent)) >= 90,]
+  Neutral = na.omit(Neutral)
+  
+  print(paste(nrow(Neutral), 'rows in filtered data'))
+  print(table(Neutral$V5 %in% names(genome)))
+  
+  Neutral$contig_length = ifelse(Neutral$V5 %in% names(genome), width(genome[match(Neutral$V5, names(genome))]))
+  Neutral <- Neutral[(as.numeric(as.character(Neutral$V6)) > (count-1)) & (Neutral$contig_length - as.numeric(as.character(Neutral$V7)) > (count+1)),]
+  
+  
+  TE_table = data.frame(table(as.character(Neutral$V10)))
+  TE_table$class = Neutral[match(TE_table$Var1, as.character(Neutral$V10)),]$V11
+  
+  Neutral_GR = GRanges(seqnames = as.character(Neutral$V5), ranges = IRanges(start = as.numeric(as.character(Neutral$V6))-count,
+                                                                             end = as.numeric(as.character(Neutral$V7))+count),
+                       strand = ifelse(as.character(Neutral$V9) == '+', '+', '-'),
+                       Element = as.character(Neutral$V10),
+                       class = as.character(Neutral$V11),
+                       percent = Neutral$percent, sequence = NA)
+  
+  Neutral_GR$sequence = getSeq(genome, Neutral_GR)
+  
+  for (i in 1:length(Neutral_GR)){
+    Neutral_GR$PLUS_MAX[i] = max(unlist(findORFs(as.character(Neutral_GR$sequence[i]), startCodon = "ATG", minimumLength = 0))@width)
+    Neutral_GR$MINUS_MAX[i] = max(unlist(findORFs(as.character(reverseComplement(Neutral_GR$sequence[i])), startCodon = "ATG", minimumLength = 0))@width)
+  }
+  
+  Neutral_GR$Number = 1:length(Neutral_GR) 
+  TE_table$best_ORF_number = NA
+  TE_table$ORF_length = NA
+  TE_table$base_ORF_length = NA
+  TE_table$strand = NA
+  
+  base@ranges@NAMES = unlist(lapply(strsplit(base@ranges@NAMES, '#'), function(x)x[1]))
+  #
+  for (i in 1:nrow(TE_table)){
+    TE_table$base_ORF_length[i] = max(unlist(findORFs(as.character(base[base@ranges@NAMES == TE_table$Var1[i],]), startCodon = "ATG", minimumLength = 0))@width)
+  }
+  #  
+  for (i in 1:nrow(TE_table)){
+    TE_table$ORF_length[i] = max(Neutral_GR[Neutral_GR$Element == TE_table$Var1[i],]$PLUS_MAX)
+    TE_table$strand[i] = as.character(strand(Neutral_GR[(Neutral_GR$PLUS_MAX == max(Neutral_GR[Neutral_GR$Element == TE_table$Var1[i],]$PLUS_MAX)) &
+                                                          Neutral_GR$Element  == TE_table$Var1[i],]))[1]
+    
+    
+    TE_table$best_ORF_number[i] = Neutral_GR[(Neutral_GR$PLUS_MAX == max(Neutral_GR[Neutral_GR$Element == TE_table$Var1[i],]$PLUS_MAX)) &
+                                               Neutral_GR$Element  == TE_table$Var1[i],]$Number[1]
+    
+  }
+  return(TE_table)
+  
+}
+
+##160
+drow_TE('~/RepeatMasker_for_all_new_base_TE/160/160_chromosome_NAMES.fasta.out',
+        '~/2022_TE_base_160/READY_BASE/transposons_ORFs_160.fasta',
+        '160')
+
+P = TE('~/RepeatMasker_for_all_new_base_TE/160/160_chromosome_NAMES.fasta.out',
+        '~/2022_TE_base_160/READY_BASE/transposons_ORFs_160.fasta',
+        '160')
+
+P$Genome = '160'
+P = P[!startsWith(as.character(P$Var1), 'TRUNC'),]
+
+P_ORF = calculate_ORFs('~/RepeatMasker_for_all_new_base_TE/160/160_chromosome_NAMES.fasta.out',
+                       '~/160_chromosome_assembly/160_chromosome_NAMES.fasta',
+                      '~/2022_TE_base_160/READY_BASE/transposons_ORFs_160.fasta',
+                      '160')
+
+
+######9
+drow_TE('~/RepeatMasker_for_all_new_base_TE/9/9_NAMES.fasta.out',
+        '~/2022_TE_base_160/READY_BASE/transposons_ORFs_160.fasta',
+        '9')
+
+M = TE('~/RepeatMasker_for_all_new_base_TE/9/9_NAMES.fasta.out',
+       '~/2022_TE_base_160/READY_BASE/transposons_ORFs_160.fasta',
+       '9')
+
+M$Genome = '9'
+M = M[!startsWith(as.character(M$Var1), 'TRUNC'),]
+
+M_ORF = calculate_ORFs('~/RepeatMasker_for_all_new_base_TE/9/9_NAMES.fasta.out',
+                       '~/9_POLISHED/9_NAMES.fasta',
+                       '~/2022_TE_base_160/READY_BASE/transposons_ORFs_160.fasta',
+                       '9')
+
+P_ORF$Genome = '160'
+ORF_sum = P_ORF
+M_ORF$Genome = '9'
+ORF_sum = rbind(P_ORF, M_ORF)
+
+#########
+
+M_ORF_compare_160 = M_ORF[M_ORF$Var1 %in% P,]
+M_ORF_compare_160 = M_ORF_compare_160[order(M_ORF_compare_160$Var1),]
+P_ORF_compare_M = P_ORF[P_ORF$Var1 %in% M,]
+P_ORF_compare_M = P_ORF_compare_M[order(P_ORF_compare_M$Var1),]
+
+table(as.character(M_ORF_compare_160$Var1) == as.character(P_ORF_compare_M$Var1))
+df = data.frame(TE = M_ORF_compare_160$Var1, M = M_ORF_compare_160$ORF_length, P = P_ORF_compare_M$ORF_length)
+df$label = ifelse(as.numeric(as.character(df$M)) != as.numeric(as.character(df$P)), 
+                  as.character(df$TE), NA)
+ggplot(data = df, aes(x = M, y = P)) +
+  geom_point() +
+  geom_label_repel(label = df$label) +
+  theme_bw() + 
+  geom_abline(slope = 1, intercept = 0, col = 'red', linetype = 'dashed') +
+  xlab('max ORFs in 9 strain') +
+  ylab('max ORFs in 160 strain') +
+  theme(text = element_text(size = 12)) +
+  ggtitle('Максимальная рамка в геноме\nдля общих 49 транспозонов')
+
+
+
+P[!P %in% M_101]
+M_101[!M_101 %in% P]
+
+summary = rbind(summary, M)
+
+  
+
+
+
+
+#######101M
+
+drow_TE('~/RepeatMasker_for_all_new_base_TE/101M/assembly.fasta.out',
+        '~/2022_TE_base_160/READY_BASE/transposons_ORFs_160.fasta',
+        '101M')
+
+M = TE('~/RepeatMasker_for_all_new_base_TE/101M/assembly.fasta.out',
+       '~/2022_TE_base_160/READY_BASE/transposons_ORFs_160.fasta',
+       '101M')
+M$Genome = '101M'
+summary = rbind(summary, M)
+
+
+M_ORF = calculate_ORFs('~/RepeatMasker_for_all_new_base_TE/101M/assembly.fasta.out',
+                       '~/GENOME_ASSEMBLIES_ONT/ASSEMBLY_101M/assembly.fasta',
+                       '~/2022_TE_base_160/READY_BASE/transposons_ORFs_160.fasta',
+                       '101M')
+M_ORF$Genome = '101M'
+ORF_sum = rbind(ORF_sum, M_ORF)
+
+P = TE('~/RepeatMasker_for_all_new_base_TE/101M/assembly.fasta.out',
+       '~/2022_TE_base_160/READY_BASE/transposons_ORFs_160.fasta',
+       '101M')
+
+P_ORF = calculate_ORFs('~/RepeatMasker_for_all_new_base_TE/101M/assembly.fasta.out',
+                       '~/GENOME_ASSEMBLIES_ONT/ASSEMBLY_101M/assembly.fasta',
+                       '~/2022_TE_base_160/READY_BASE/transposons_ORFs_160.fasta',
+                       '101M')
+
+
+################
+
+M_ORF_compare_160 = M_ORF[M_ORF$Var1 %in% P,]
+M_ORF_compare_160 = M_ORF_compare_160[order(M_ORF_compare_160$Var1),]
+P_ORF_compare_M = P_ORF[P_ORF$Var1 %in% M,]
+P_ORF_compare_M = P_ORF_compare_M[order(P_ORF_compare_M$Var1),]
+
+table(as.character(M_ORF_compare_160$Var1) == as.character(P_ORF_compare_M$Var1))
+df = data.frame(TE = M_ORF_compare_160$Var1, M = M_ORF_compare_160$ORF_length, P = P_ORF_compare_M$ORF_length)
+df$label = ifelse(as.numeric(as.character(df$M)) != as.numeric(as.character(df$P)), 
+                  as.character(df$TE), NA)
+ggplot(data = df, aes(x = M, y = P)) +
+  geom_point() +
+  geom_label_repel(label = df$label) +
+  theme_bw() + 
+  geom_abline(slope = 1, intercept = 0, col = 'red', linetype = 'dashed') +
+  xlab('max ORFs in 101M strain') +
+  ylab('max ORFs in 160 strain') +
+  theme(text = element_text(size = 12)) +
+  ggtitle('Максимальная рамка в геноме\nдля общих 45 транспозонов')
+
+
+
+P[!P %in% N]
+N[!N %in% M]
+
+
+#101N
+drow_TE('~/RepeatMasker_for_all_new_base_TE/N_101/assembly.fasta.out',
+        '~/2022_TE_base_160/READY_BASE/transposons_ORFs_160.fasta',
+        '101N')
+
+M = TE('~/RepeatMasker_for_all_new_base_TE/N_101/assembly.fasta.out',
+       '~/2022_TE_base_160/READY_BASE/transposons_ORFs_160.fasta',
+       '101N')
+M$Genome = '101N'
+summary = rbind(summary, M)
+
+
+M_ORF = calculate_ORFs('~/RepeatMasker_for_all_new_base_TE/N_101/assembly.fasta.out',
+                       '~/GENOME_ASSEMBLIES_ONT/101N_genome_assembly/assembly.fasta',
+                       '~/2022_TE_base_160/READY_BASE/transposons_ORFs_160.fasta',
+                       '101N')
+M_ORF$Genome = '101N'
+ORF_sum = rbind(ORF_sum, M_ORF)
+
+#########
+
+M_ORF_compare_160 = M_ORF[M_ORF$Var1 %in% P,]
+M_ORF_compare_160 = M_ORF_compare_160[order(M_ORF_compare_160$Var1),]
+P_ORF_compare_M = P_ORF[P_ORF$Var1 %in% M,]
+P_ORF_compare_M = P_ORF_compare_M[order(P_ORF_compare_M$Var1),]
+
+table(as.character(M_ORF_compare_160$Var1) == as.character(P_ORF_compare_M$Var1))
+df = data.frame(TE = M_ORF_compare_160$Var1, M = M_ORF_compare_160$ORF_length, P = P_ORF_compare_M$ORF_length)
+df$label = ifelse(as.numeric(as.character(df$M)) != as.numeric(as.character(df$P)), 
+                  as.character(df$TE), NA)
+ggplot(data = df, aes(x = M, y = P)) +
+  geom_point() +
+  geom_label_repel(label = df$label) +
+  theme_bw() + 
+  geom_abline(slope = 1, intercept = 0, col = 'red', linetype = 'dashed') +
+  xlab('max ORFs in 101N strain') +
+  ylab('max ORFs in 101M strain') +
+  theme(text = element_text(size = 12)) +
+  ggtitle('Максимальная рамка в геноме\nдля общих 45 транспозонов')
+
+
+
+P[!P %in% M]
+M[!M %in% P]
+
+
+####F1 101M:
+
+drow_TE('~/RepeatMasker_for_all_new_base_TE/F1_101M_160/assembly.fasta.out',
+        '~/2022_TE_base_160/READY_BASE/transposons_ORFs_160.fasta',
+        'F1_101Mx160')
+
+M = TE('~/RepeatMasker_for_all_new_base_TE/F1_101M_160/assembly.fasta.out',
+       '~/2022_TE_base_160/READY_BASE/transposons_ORFs_160.fasta',
+       'F1_101Mx160')
+M$Genome = 'F1:101Mx160'
+summary = rbind(summary, M)
+
+M_ORF = calculate_ORFs('~/RepeatMasker_for_all_new_base_TE/F1_101M_160/assembly.fasta.out',
+                       '~/2022_TE_base_160/Flye_F1_101M_160/assembly.fasta',
+                       '~/2022_TE_base_160/READY_BASE/transposons_ORFs_160.fasta',
+                       'F1_101Mx160')
+M_ORF$Genome = 'F1_101Mx160'
+ORF_sum = rbind(ORF_sum, M_ORF)
+
+####F1 101N:
+
+drow_TE('~/RepeatMasker_for_all_new_base_TE/F1_101N_160/assembly.fasta.out',
+        '~/2022_TE_base_160/READY_BASE/transposons_ORFs_160.fasta',
+        'F1_101Nx160')
+
+N = TE('~/RepeatMasker_for_all_new_base_TE/F1_101N_160/assembly.fasta.out',
+       '~/2022_TE_base_160/READY_BASE/transposons_ORFs_160.fasta',
+       'F1_101Nx160')
+N$Genome = 'F1:101Nx160'
+summary = rbind(summary, N)
+
+
+N_ORF = calculate_ORFs('~/RepeatMasker_for_all_new_base_TE/F1_101N_160/assembly.fasta.out',
+                       '~/2022_TE_base_160/Flye_F1_101N_160/assembly.fasta',
+                       '~/2022_TE_base_160/READY_BASE/transposons_ORFs_160.fasta',
+                       'F1_101Nx160')
+
+N_ORF$Genome = 'F1_101Nx160'
+ORF_sum = rbind(ORF_sum, N_ORF)
+
+M_ORF = N_ORF
+M_ORF_compare_160 = M_ORF[M_ORF$Var1 %in% P,]
+M_ORF_compare_160 = M_ORF_compare_160[order(M_ORF_compare_160$Var1),]
+P_ORF_compare_M = P_ORF[P_ORF$Var1 %in% N,]
+P_ORF_compare_M = P_ORF_compare_M[order(P_ORF_compare_M$Var1),]
+
+table(as.character(M_ORF_compare_160$Var1) == as.character(P_ORF_compare_M$Var1))
+df = data.frame(TE = M_ORF_compare_160$Var1, M = M_ORF_compare_160$ORF_length, P = P_ORF_compare_M$ORF_length)
+df$label = ifelse(as.numeric(as.character(df$M)) != as.numeric(as.character(df$P)), 
+                  as.character(df$TE), NA)
+ggplot(data = df, aes(x = M, y = P)) +
+  geom_point() +
+  geom_label_repel(label = df$label) +
+  theme_bw() + 
+  geom_abline(slope = 1, intercept = 0, col = 'red', linetype = 'dashed') +
+  xlab('max ORFs in chinaN strain') +
+  ylab('max ORFs in 160 strain') +
+  theme(text = element_text(size = 12)) +
+  ggtitle('Максимальная рамка в геноме\nдля общих 50 транспозонов')
+
+
+
+#chinaN
+
+drow_TE('~/RepeatMasker_for_all_new_base_TE/chinaN/BEST_chinaN_assembly.fasta.out',
+        '~/2022_TE_base_160/READY_BASE/transposons_ORFs_160.fasta',
+        'ChinaN')
+
+N = TE('~/RepeatMasker_for_all_new_base_TE/chinaN/BEST_chinaN_assembly.fasta.out',
+       '~/2022_TE_base_160/READY_BASE/transposons_ORFs_160.fasta',
+       'ChinaN')
+N$Genome = 'ChinaN'
+summary = rbind(summary, N)
+
+N_ORF = calculate_ORFs('~/RepeatMasker_for_all_new_base_TE/chinaN/BEST_chinaN_assembly.fasta.out',
+                       '~/GENOME_ASSEMBLIES_ONT/Genome_assembly_chinaN/assembly_all_reads_without_short_mt/BEST_chinaN_assembly.fasta',
+                       '~/2022_TE_base_160/READY_BASE/transposons_ORFs_160.fasta',
+                       'ChinaN')
+N_ORF$Genome = 'ChinaN'
+ORF_sum = rbind(ORF_sum, N_ORF)
+
+#chinaM
+
+drow_TE('~/RepeatMasker_for_all_new_base_TE/M_china/assembly.fasta.out',
+        '~/2022_TE_base_160/READY_BASE/transposons_ORFs_160.fasta',
+        'ChinaM')
+
+M = TE('~/RepeatMasker_for_all_new_base_TE/M_china/assembly.fasta.out',
+       '~/2022_TE_base_160/READY_BASE/transposons_ORFs_160.fasta',
+       'ChinaM')
+M$Genome = 'ChinaM'
+summary = rbind(summary, M)
+
+
+M_ORF = calculate_ORFs('~/RepeatMasker_for_all_new_base_TE/M_china/assembly.fasta.out',
+                       '~/GENOME_ASSEMBLIES_ONT/1051_china_M_assembly/assembly.fasta',
+                       '~/2022_TE_base_160/READY_BASE/transposons_ORFs_160.fasta',
+                       'ChinaM')
+M_ORF$Genome = 'ChinaM'
+ORF_sum = rbind(ORF_sum, M_ORF)
+write.table('~/2022_TE_base_160/READY_BASE/ORFs_summary.out', quote = F, row.names = F)
+
+
+P = N
+P_ORF = N_ORF
+M_ORF_compare_160 = M_ORF[M_ORF$Var1 %in% P,]
+M_ORF_compare_160 = M_ORF_compare_160[order(M_ORF_compare_160$Var1),]
+P_ORF_compare_M = P_ORF[P_ORF$Var1 %in% M,]
+P_ORF_compare_M = P_ORF_compare_M[order(P_ORF_compare_M$Var1),]
+
+table(as.character(M_ORF_compare_160$Var1) == as.character(P_ORF_compare_M$Var1))
+df = data.frame(TE = M_ORF_compare_160$Var1, M = M_ORF_compare_160$ORF_length, P = P_ORF_compare_M$ORF_length)
+df$label = ifelse(as.numeric(as.character(df$M)) != as.numeric(as.character(df$P)), 
+                  as.character(df$TE), NA)
+ggplot(data = df, aes(x = M, y = P)) +
+  geom_point() +
+  geom_label_repel(label = df$label) +
+  theme_bw() + 
+  geom_abline(slope = 1, intercept = 0, col = 'red', linetype = 'dashed') +
+  xlab('max ORFs in chinaM strain') +
+  ylab('max ORFs in chinaN strain') +
+  theme(text = element_text(size = 12)) +
+  ggtitle('Максимальная рамка в геноме\nдля общих 47 транспозонов')
+
+
+
+
+
+save = summary
+write.table(save, '~/2022_TE_base_160/READY_BASE/summary_TE_copies.out',
+            quote = F, row.names = F)
+
+
+ORF_sum = ORF_sum[!startsWith(as.character(ORF_sum$Var1), 'TRUNC'),]
+ORF_sum$class = ifelse(startsWith(as.character(ORF_sum$class), 'DNA'), 'DNA', as.character(ORF_sum$class))
+ORF_sum$class = ifelse(startsWith(as.character(ORF_sum$class), 'LINE'), 'LINE', as.character(ORF_sum$class))
+ORF_sum$class = ifelse(startsWith(as.character(ORF_sum$class), 'LTR'), 'LTR', as.character(ORF_sum$class))
+ORF_sum$class = as.factor(ORF_sum$class)
+
+summary = read.table('~/2022_TE_base_160/READY_BASE/summary_TE_copies.out', header = T)
+summary = summary[!startsWith(as.character(summary$Var1), 'TRUNC'),]
+summary = summary[summary$Var1 != 'dvir-0-85-centroid',]
+
+
+DNA = summary[summary$class == 'LTR',]
+library('RColorBrewer')
+library('viridis')
+
+
+ggplot(data = DNA, aes(x = Var1, y = Freq, fill = Genome)) + 
+  geom_bar(stat = 'identity', position=position_dodge()) +
+  theme_bw() +
+  xlab('TE name') +
+  ylab('Count of full copies') +
+  scale_fill_brewer(palette = 'Paired') +
+  theme(text = element_text(size = 17)) +
+  ggtitle('LTR transposons, full-copies') +
+  theme(axis.text.x = element_text(angle = 20))
+
+DNA_ORF = ORF_sum[ORF_sum$class == 'LTR',]
+ggplot(data = DNA_ORF, aes(x = Var1, y = ORF_length, fill = Genome)) + 
+  geom_bar(stat = 'identity', position=position_dodge()) +
+  theme_bw() +
+  xlab('TE name') +
+  ylab('Max ORF length') +
+  scale_fill_brewer(palette = 'Paired') +
+  theme(text = element_text(size = 17)) +
+  ggtitle('LTR transposons, full-copies') +
+  theme(axis.text.x = element_text(angle = 20))
+
+
+
+
+
+
+
+
+
+
+#####################tblastn
+blast = read.csv('~/2022_TE_base_160/tblastn_to_proteins.out', fill = T, sep = '\t', header = F)
+#blast = blast[1:5000,]
+blast$V9 = as.numeric(as.character(blast$V9))
+blast$V10 = as.numeric(as.character(blast$V10))
+blast$V2 = as.character(blast$V2)
+path_to_genome = '~/160_chromosome_assembly/160_chromosome_NAMES.fasta'
+genome = readDNAStringSet(path_to_genome)
+blast$chromosome_length = ifelse(blast$V2 %in% names(genome), width(genome[match(blast$V2, names(genome))]))
+N = 1000
+blast$start = ifelse(blast$V9 < blast$V10, blast$V9, blast$V10)
+blast$end = ifelse(blast$V9 >= blast$V10, blast$V9, blast$V10)
+blast = blast[blast$end - blast$start > 500,]
+blast$start = blast$start - N
+blast$end = blast$end + N
+blast = blast[blast$start > 1 & blast$end < blast$chromosome_length,]
+GR = GRanges(seqnames = blast$V2, ranges = IRanges(start = blast$start, end = blast$end))
+GR$sequence = getSeq(genome, GR)
+View(as.data.frame(GR))
+GR$familiar = NA
+
+for (i in 1:length(GR)){
+  seq = GR$sequence[i]
+  names(seq) = paste('seq')
+  writeXStringSet(seq, '~/2022_TE_base_160/tmp/seq.fasta')
+  blast_do <- system('blastn -task megablast -query ~/2022_TE_base_160/tmp/seq.fasta -db ~/2022_TE_base_160/TEs_CDS_base.fasta -outfmt 6 -num_threads 128 -evalue 1e-15', intern = T)
+  blast_df <- as.data.frame(do.call('rbind', strsplit(blast_do, '\t')))
+  if (nrow(blast_df) == 0){
+    GR$familiar[i] = 'RESEARCH'
+  }
+  if ((i %% 10) == 0){
+    print(i)
+  }
+}
+
+GR = GR[!is.na(GR$familiar),]
+length(GR)
+
+GR$PLUS_MAX = NA
+GR$MINUS_MAX= NA
+
+for (i in 1:length(GR)){
+  GR$PLUS_MAX[i] = max(unlist(findORFs(as.character(GR$sequence[i]), startCodon = "ATG", minimumLength = 0))@width)
+  GR$MINUS_MAX[i] = max(unlist(findORFs(as.character(reverseComplement(GR$sequence[i])), startCodon = "ATG", minimumLength = 0))@width)
+  if ((i %% 10) == 0){
+    print(i)
+  }
+}
+
+GR = GR[GR$PLUS_MAX > 600 | GR$MINUS_MAX > 600,]
+
+GR = as.data.frame(GR)
+
+
+
+write.table(GR, '~/2022_TE_base_160/tblast_dir/results.out', row.names = T, col.names = T, quote = F)
+
+
+
+
+a = as.data.frame(table(GR$PLUS_MAX, GR$seqnames))
+a = a[as.numeric(as.character(a$Freq)) != 0,]
+a = a[as.numeric(as.character(a$Var1)) > 600,]
+View(as.data.frame(table(a$Var1)))
+
+
+
+GR = read.csv('~/2022_TE_base_160/tblast_dir/reverse.out', fill = T, sep = '\t', header = F)
+length(unique(GR$V1))
+
+my_dna = readDNAStringSet('~/2022_TE_base_160/tblast_dir/dna_reverse.fasta')
+my_dna = reverseComplement(my_dna)
+my_dna = my_dna[!my_dna@ranges@NAMES %in% unique(GR$V1),]
+
+my_dna = data.frame(my_dna)
+
+my_dna$PLUS_MAX = NA
+
+for (i in 1:length(my_dna)){
+  my_dna$PLUS_MAX[i] = max(unlist(findORFs(as.character(my_dna$my_dna[i]), startCodon = "ATG", minimumLength = 0))@width)
+#  my_dna$MINUS_MAX[i] = max(unlist(findORFs(as.character(reverseComplement(my_dna$my_dna[i])), startCodon = "ATG", minimumLength = 0))@width)
+  if ((i %% 10) == 0){
+    print(i)
+  }
+}
+
+
+
+
+GR = GR[GR$MINUS_MAX > 1000,]
+DNA = DNAStringSet(GR$sequence)
+names(DNA) = 1:710
+writeXStringSet(DNA, '~/2022_TE_base_160/tblast_dir/dna_reverse.fasta')
+
+
+################## frame differences
+
+N = readDNAStringSet('~/GENOME_ASSEMBLIES_ONT/101N_genome_assembly/assembly.fasta')
+N@ranges@NAMES
+
+ORFs_in_TE = function(path_to_out_masker, path_to_genome, base_path, NAME, count){
+  base = readDNAStringSet(base_path)
+  #TE = data.frame(TE = base@ranges@NAMES, '#', width = base@ranges@width)
+  TE = data.frame(TE = unlist(lapply(strsplit(base@ranges@NAMES, '#'), function(x)x[1])), width = base@ranges@width)
+  #TE = data.frame(TE = unlist(lapply(strsplit(base@ranges@NAMES, '\t'), function(x)x[1])), width = base@ranges@width)
+  
+  Neutral = read.table(path_to_out_masker, fill = T)
+  rows = nrow(Neutral)
+  Neutral = Neutral[c(3:rows),]
+  Neutral = na.omit(Neutral)
+  print(paste(rows, 'rows in initial data'))
+  genome = readDNAStringSet(path_to_genome)
+  #  genome@ranges@NAMES = paste(genome@ranges@NAMES,'_',sep='')
+  
+  Neutral$TE_width = TE[match(as.character(Neutral$V10), TE$TE),]$width
+  
+  Neutral$range = as.numeric(as.character(Neutral$V7)) - as.numeric(as.character(Neutral$V6))
+  Neutral$percent = as.numeric(as.character(Neutral$range))/as.numeric(as.character(Neutral$TE_width)) * 100
+  Neutral <- Neutral[as.numeric(as.character(Neutral$percent)) >= 90,]
+  print(paste(nrow(Neutral), 'rows in filtered data'))
+  print(table(Neutral$V5 %in% names(genome)))
+  
+  
+  Neutral$contig_length = ifelse(Neutral$V5 %in% names(genome), width(genome[match(Neutral$V5, names(genome))]))
+  Neutral <- Neutral[(as.numeric(as.character(Neutral$V6)) > (count-1)) & (Neutral$contig_length - as.numeric(as.character(Neutral$V7)) > (count+1)),]
+  
+  
+  TE_table = data.frame(table(as.character(Neutral$V10)))
+  TE_table$class = Neutral[match(TE_table$Var1, as.character(Neutral$V10)),]$V11
+  
+  ggplot(data = TE_table, aes(x = reorder(Var1, Freq), y = Freq, fill = class)) +
+    geom_bar(stat="identity") + 
+    coord_flip() +
+    theme_bw() + ggtitle(paste('Number of copies at least 90%, RepeatMasker\ngenome:', NAME)) +
+    xlab('TE copy number') +
+    ylab('TE name') +
+    labs(fill = 'TE class') + 
+    theme(text = element_text(size = 15))
+  
+  ggsave(filename = paste(NAME,'.png'), path = '/mnt/raid/pro_milka/2022_TE_base_160/pic_101N/')
+  
+  Neutral_GR = GRanges(seqnames = as.character(Neutral$V5), ranges = IRanges(start = as.numeric(as.character(Neutral$V6))-count,
+                                                                             end = as.numeric(as.character(Neutral$V7))+count),
+                       strand = ifelse(as.character(Neutral$V9) == '+', '+', '-'),
+                       Element = as.character(Neutral$V10),
+                       class = as.character(Neutral$V11),
+                       percent = Neutral$percent, sequence = NA)
+  
+  Neutral_GR$sequence = getSeq(genome, Neutral_GR)
+  
+  for (i in 1:length(Neutral_GR)){
+    Neutral_GR$PLUS_MAX[i] = max(unlist(findORFs(as.character(Neutral_GR$sequence[i]), startCodon = "ATG", minimumLength = 0))@width)
+    Neutral_GR$MINUS_MAX[i] = max(unlist(findORFs(as.character(reverseComplement(Neutral_GR$sequence[i])), startCodon = "ATG", minimumLength = 0))@width)
+  }
+  
+  Neutral_GR$Number = 1:length(Neutral_GR) 
+  TE_table$best_ORF_number = NA
+  TE_table$ORF_length = NA
+  TE_table$base_ORF_length = NA
+  TE_table$strand = NA
+  
+  base@ranges@NAMES = unlist(lapply(strsplit(base@ranges@NAMES, '#'), function(x)x[1]))
+  #
+  for (i in 1:nrow(TE_table)){
+    TE_table$base_ORF_length[i] = max(unlist(findORFs(as.character(base[base@ranges@NAMES == TE_table$Var1[i],]), startCodon = "ATG", minimumLength = 0))@width)
+  }
+  #  
+  for (i in 1:nrow(TE_table)){
+    TE_table$ORF_length[i] = max(Neutral_GR[Neutral_GR$Element == TE_table$Var1[i],]$PLUS_MAX)
+    TE_table$strand[i] = as.character(strand(Neutral_GR[(Neutral_GR$PLUS_MAX == max(Neutral_GR[Neutral_GR$Element == TE_table$Var1[i],]$PLUS_MAX)) &
+                                                          Neutral_GR$Element  == TE_table$Var1[i],]))[1]
+    
+    
+    TE_table$best_ORF_number[i] = Neutral_GR[(Neutral_GR$PLUS_MAX == max(Neutral_GR[Neutral_GR$Element == TE_table$Var1[i],]$PLUS_MAX)) &
+                                               Neutral_GR$Element  == TE_table$Var1[i],]$Number[1]
+    
+  }
+  return(TE_table)
+}
+
+
+N_data = ORFs_in_TE('~/2022_TE_base_160/Masker_kneepads_101N/assembly.fasta.out',
+                    '~/GENOME_ASSEMBLIES_ONT/101N_genome_assembly/assembly.fasta',
+                    '~/2022_TE_base_160/TEs_CDS_base.fasta',
+                    '101N',
+                    10)
+N_data$label = NA
+N_data$label = ifelse(N_data$ORF_length == N_data$base_ORF_length, NA, as.character(N_data$Var1))
+
+ggplot(data = N_data, aes(x = base_ORF_length, y = ORF_length, col = log2(Freq))) + 
+  geom_point() +
+  geom_label_repel(label = N_data$label) +
+  theme_bw() +
+  labs(x = 'Best ORF in 160', y = 'Best ORF in 101N') +
+  ggtitle('Compare ORF in 101N and 160 strains')
+
+
+
+M_data = ORFs_in_TE('~/2022_TE_base_160/Masker_kneepads_101M/assembly.fasta.out',
+                    '~/GENOME_ASSEMBLIES_ONT/ASSEMBLY_101M/assembly.fasta',
+                    '~/2022_TE_base_160/TEs_CDS_base.fasta',
+                    '101M',
+                    10)
+
+
+
+M_data$label = NA
+M_data$label = ifelse(M_data$ORF_length == M_data$base_ORF_length, NA, as.character(M_data$Var1))
+
+ggplot(data = M_data, aes(x = base_ORF_length, y = ORF_length, col = log2(Freq))) + 
+  geom_point() +
+  geom_label_repel(label = M_data$label) +
+  theme_bw() +
+  labs(x = 'Best ORF in 160', y = 'Best ORF in 101M') +
+  ggtitle('Compare ORF in 101M and 160 strains')
+
+
+
+table(M_data$Var1 %in% N_data$Var1)
+
+M_data[!M_data$Var1 %in% N_data$Var1,]
+
+
+vec = unique(c(as.character(N_data$Var1), as.character(M_data$Var1)))
+df = data.frame(TE = vec, ORF_N = 0, ORF_M = 0)
+df$ORF_N = N_data[match(df$TE, as.character(N_data$Var1)),]$ORF_length
+df$ORF_M = M_data[match(df$TE, as.character(M_data$Var1)),]$ORF_length
+df$label = NA
+df$label = ifelse(df$ORF_N == df$ORF_M, NA, as.character(df$TE))
+
+
+ggplot(data = df, aes(x = ORF_N, y = ORF_M)) + 
+  geom_point() +
+  geom_label_repel(label = df$label) +
+  theme_bw() +
+  labs(x = 'Best ORF in 101N', y = 'Best ORF in 101M') +
+  ggtitle('Compare ORF in 101M and 101N strains') 
+
+
+
+################################################################################
+
+base_to_base = read.csv('~/2022_TE_base_160/spring/out', sep = '\t', header = F)
+
+base_to_base = base_to_base[base_to_base$V1 != base_to_base$V2,]
+unique(base_to_base$V2)
+
+###############################################
+#vis
+
+base = readDNAStringSet('~/2022_TE_base_160/TEs_CDS_base.fasta')
+base@ranges@NAMES 
+
+df = data.frame(V1 = unlist(lapply(strsplit(base@ranges@NAMES, '#'), function(x)x[1])),
+                V2 = unlist(lapply(strsplit(base@ranges@NAMES, '#'), function(x)x[2]))
+                )
+
+df$type = unlist(lapply(strsplit(as.character(df$V2), '/'), function(x)x[1]))
+View(as.data.frame(table(df$type)))
+
+ggplot(data = df, aes(x = df$type, fill = df$type)) + geom_bar(stat = 'count') + theme_bw() +
+  xlab('TE type') + labs(fill = 'TE type') + 
+  ggtitle('Общее распределение восстановленных\nтранспозонов в геноме 160й\n(восстановленных рамок)') +
+  theme(text = element_text(size = 12))
+
+
+
+df = df[df$type == 'LTR',]
+df$V1
+
+
+Neutral = read.table('~/2022_TE_base_160/masker_for_seminar/160_chromosome_NAMES.fasta.out', fill = T)
+
+base = readDNAStringSet(base_path)
+#TE = data.frame(TE = base@ranges@NAMES, '#', width = base@ranges@width)
+TE = data.frame(TE = unlist(lapply(strsplit(base@ranges@NAMES, '#'), function(x)x[1])), width = base@ranges@width)
+#TE = data.frame(TE = unlist(lapply(strsplit(base@ranges@NAMES, '\t'), function(x)x[1])), width = base@ranges@width)
+
+rows = nrow(Neutral)
+Neutral = Neutral[c(3:rows),]
+Neutral = na.omit(Neutral)
+Neutral = Neutral[,1:11]
+print(paste(rows, 'rows in initial data'))
+genome = readDNAStringSet('~/160_chromosome_assembly/160_chromosome_NAMES.fasta')
+#  genome@ranges@NAMES = paste(genome@ranges@NAMES,'_',sep='')
+
+Neutral$TE_width = TE[match(as.character(Neutral$V10), TE$TE),]$width
+
+Neutral$range = as.numeric(as.character(Neutral$V7)) - as.numeric(as.character(Neutral$V6))
+Neutral$percent = as.numeric(as.character(Neutral$range))/as.numeric(as.character(Neutral$TE_width)) * 100
+Neutral <- Neutral[as.numeric(as.character(Neutral$percent)) >= 90,]
+Neutral = na.omit(Neutral)
+
+table(Neutral$V11) 
+LTR = Neutral[Neutral$V11 %in% c('LTR/Copia', 'LTR/Gypsy',
+                                 'LTR/Pao'),]
+
+length(unique(LTR$V10))
+LTR_table = as.data.frame(table(as.character(LTR$V10)))
+
+ggplot(data = LTR_table, aes(x = reorder(Var1, Freq), y = Freq, fill = Var1)) +
+  geom_bar(stat="identity") + 
+  coord_flip() +
+  theme_bw() + ggtitle('Number of copies of at least 90%\nLTR transposons in 160 strain') +
+  ylab('TE copy number') +
+  xlab('TE name') +
+  labs(fill = 'TE name:') + 
+  theme(text = element_text(size = 12))
+
+
+
+
+
+#################################################
+
+
+M_2 = ORFs_in_TE_2('~/9_POLISHED/RepeatMasker_44/9_NAMES.fasta.out',
+                   '~/9_POLISHED/9_BEST_NAMES.fasta',
+                   '~/TE_bases/44_TE/dvir_full-size_TEs.fasta',
+                   '9',
+                   100)
+
+
+
+
+
+
+
+
+
+View(as.data.frame(M_2))
+
+base = readDNAStringSet('~/TE_bases/44_TE/dvir_full-size_TEs.fasta')
+base@ranges@NAMES
+
+masker = read.table('~/160_chromosome_assembly/RepeatMasker_44/160_chromosome_NAMES.fasta.out', fill = T)
+
+
+
+
+MM = ORFs_in_TE('~/TE_BASE_CHECK_IN_9/Masker_LTR/9_NAMES.fasta.out',
+               '~/9_POLISHED/9_BEST_NAMES.fasta',
+               '~/TE_BASE_CHECK_IN_9/LTR_160_updated_for_promilka.fasta',
+               '9_UPD_DNA',
+               100)
+
+M = ORFs_in_TE_2('~/TE_BASE_CHECK_IN_9/Masker_LTR/9_NAMES.fasta.out',
+                '~/9_POLISHED/9_BEST_NAMES.fasta',
+                '~/TE_BASE_CHECK_IN_9/LTR_160_updated_for_promilka.fasta',
+                '9_UPD_DNA',
+                100)
+
+M = as.data.frame(M)
+
+
+Ulysses = DNAStringSet(M[M$Element == 'Ulysses_full',]$sequence)
+names(Ulysses) = paste(M[M$Element == 'Ulysses_full',]$seqnames,':',M[M$Element == 'Ulysses_full',]$start,'_',M[M$Element == 'Ulysses_full',]$end, sep = '')
+writeXStringSet(Ulysses, '~/TE_BASE_CHECK_IN_9/Ulysses_9/Ulysses.fasta')
+
+
+
+DNA = readDNAStringSet('~/9_POLISHED/9_BEST_NAMES.fasta')
+DNA@ranges@NAMES
+masker = read.table('~/TE_BASE_CHECK_IN_9/Masker_DNA/9_NAMES.fasta.out', fill = T)
+
+
+P = ORFs_in_TE('~/TBLAST_PART/Masker/160_chromosome.fasta.out',
+               '~/160_chromosome_assembly/160_chromosome_NAMES.fasta',
+               '~/TBLAST_PART/RepBase23.04.fasta/drorep.ref',
+               '160', 100
+)
+
+
+
+
+
+
+P[310]
+
+
+Neutral = read.table('~/TBLAST_PART/Masker/160_chromosome.fasta.out', fill = T)
+genome = readDNAStringSet('~/160_chromosome_assembly/160_chromosome_NAMES.fasta')
+
+data = readDNAStringSet('~/TBLAST_PART/RepBase23.04.fasta/drorep.ref')
+data@ranges@NAMES[1]
+
+unlist(lapply(strsplit(data@ranges@NAMES, '\t'), function(x)x[1]))
+
+
+P = ORFs_in_TE_2('~/RepeatMasker_UPD_NEWBASE_FINAL/RepeatMasker_160/160_chromosome.fasta.out',
+           '~/160_chromosome_assembly/160_chromosome_NAMES.fasta',
+           '~/TE_bases/44_TE/dvir_full-size_TEs.fasta',
+           '160', 10
+           )
+P = as.data.frame(P)
+
+Ulysses = DNAStringSet(P[P$Element == 'Ulysses_full',]$sequence)
+Ulysses
+names(Ulysses) = paste(P[P$Element == 'Ulysses_full',]$seqnames,':',P[P$Element == 'Ulysses_full',]$start,'_',P[P$Element == 'Ulysses_full',]$end, sep = '')
+writeXStringSet(Ulysses, '~/Ulysses_160.fasta')
+
+
+
+write.csv(P, '~/TRANSPOSONS_FRAME_RESULTS/160_results.out')
+
+M_nine = ORFs_in_TE('~/RepeatMasker_UPD_NEWBASE_FINAL/RepeatMasker_9/9_correct_names.fasta.out',
+                    '~/9_POLISHED/9_NAMES.fasta',
+                    '~/TE_bases/44_TE/dvir_full-size_TEs.fasta',
+                    '9', 0
+                    )
+
+write.csv(M_nine, '~/TRANSPOSONS_FRAME_RESULTS/9_results.out')
+
+
+chinaN = ORFs_in_TE('~/check_china_homology/chinaN/BEST_chinaN_assembly.fasta.out',
+                    '~/GENOME_ASSEMBLIES_ONT/Genome_assembly_chinaN/assembly_all_reads_without_short_mt/BEST_chinaN_assembly.fasta',
+                    '~/TE_bases/44_TE/dvir_full-size_TEs.fasta',
+                    'chinaN', 0
+                    )
+write.csv(chinaN, '~/TRANSPOSONS_FRAME_RESULTS/chinaN_results.out')
+  
+  
+chinaM = ORFs_in_TE('~/check_china_homology/chinaM/assembly.fasta.out',
+                    '~/GENOME_ASSEMBLIES_ONT/1051_china_M_assembly/assembly.fasta',
+                    '~/TE_bases/44_TE/dvir_full-size_TEs.fasta',
+                    'chinaM', 0
+                    )  
+write.csv(chinaM, '~/TRANSPOSONS_FRAME_RESULTS/chinaM_1051_results.out')
+
+
+N_101 = ORFs_in_TE('~/check_china_homology/101N/assembly.fasta.out',
+                    '~/GENOME_ASSEMBLIES_ONT/101N_genome_assembly/assembly.fasta',
+                    '~/TE_bases/44_TE/dvir_full-size_TEs.fasta',
+                    '101N', 0
+)  
+write.csv(N_101, '~/TRANSPOSONS_FRAME_RESULTS/101N_results.out')
+
+M_101 = ORFs_in_TE('~/check_china_homology/101M/assembly.fasta.out',
+                   '~/GENOME_ASSEMBLIES_ONT/ASSEMBLY_101M/assembly.fasta',
+                   '~/TE_bases/44_TE/dvir_full-size_TEs.fasta',
+                   '101M', 0
+)  
+write.csv(M_101, '~/TRANSPOSONS_FRAME_RESULTS/101M_results.out')
+
+
+base = readDNAStringSet('~/TE_bases/44_TE/dvir_full-size_TEs.fasta')
+data = data.frame(TE = unlist(lapply(strsplit(base@ranges@NAMES, '#'), function(x)x[1])), 
+                  'genome_160' = 0, 
+                  'genome_9' = 0,
+                  'chinaN' = 0,
+                  'chinaM' = 0,
+                  'genome_101N' = 0,
+                  'genome_101M' = 0
+                  )
+
+position_in_data = match(P$Var1, data$TE)
+data$genome_160[position_in_data] = P$ORF_length
+
+position_in_data = match(M_nine$Var1, data$TE)
+data$genome_9[position_in_data] = M_nine$ORF_length
+
+position_in_data = match(chinaN$Var1, data$TE)
+data$chinaN[position_in_data] = chinaN$ORF_length
+
+position_in_data = match(chinaM$Var1, data$TE)
+data$chinaM[position_in_data] = chinaM$ORF_length
+
+position_in_data = match(N_101$Var1, data$TE)
+data$genome_101N[position_in_data] = N_101$ORF_length
+
+position_in_data = match(M_101$Var1, data$TE)
+data$genome_101M[position_in_data] = M_101$ORF_length
+
+write.csv(data, '~/TRANSPOSONS_FRAME_RESULTS/summary.out')
+
+library('pheatmap')
+
+rownames(data) = data$TE
+data$TE = NULL
+pheatmap(data)
+
