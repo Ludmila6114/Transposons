@@ -1,0 +1,523 @@
+##############################################################################################3
+#part1. Genes in 160 and their relationships with TEs:
+
+data <- readxl::read_xlsx('/mnt/raid/pro_milka/2021_year/Teflon_insertions/assTEv1_160_insertions_final.xlsx')
+TE <- GRanges(data$Chromosome, IRanges(data$Begin, data$End), 
+              strand = data$Strand, 
+              Element = data$Element, 
+              id = data$id, 
+              percent = data$`% of canonical copy`, 
+              chromatin = data$Chromatin)
+TE_5000_longer = TE
+start(TE_5000_longer) = start(TE) - 5000
+end(TE_5000_longer) = end(TE) + 5000
+
+annotation_Sasha <- rtracklayer::import('/mnt/raid/alexr/genome.annotation/FINAL/Dvir_160_liftoff_recursive.gtf')
+Gene <- annotation_Sasha[annotation_Sasha$type == 'gene']
+
+df = data.frame(gene_id = NA, TE_id = NA, Element = NA, percent = NA, chromatin = NA, status = NA)
+
+for (i in 1:length(Gene)){
+  #TE in flanks for a particular Gene, Gene[i];
+  if ( 
+    (length(findOverlaps(Gene[i], TE_5000_longer, ignore.strand = TRUE)) != 0) & (length(findOverlaps(Gene[i], TE, ignore.strand = TRUE)) == 0))
+    {
+    over = findOverlaps(Gene[i], TE_5000_longer, ignore.strand = TRUE)
+
+    for (j in 1:length(subjectHits(over))){
+      tmp = data.frame(gene_id = NA, TE_id = NA, Element = NA, percent = NA, chromatin = NA, status = NA)
+      tmp$gene_id[1] = Gene[i]$gene_id
+      tmp$status[1] = 'TEs in flanks'
+      tmp$Element[1] = TE_5000_longer[subjectHits(over)[j]]$Element
+      tmp$percent[1] = TE_5000_longer[subjectHits(over)[j]]$percent
+      tmp$chromatin[1] = TE_5000_longer[subjectHits(over)[j]]$chromatin
+      tmp$TE_id[1] = TE_5000_longer[subjectHits(over)[j]]$id
+      df = rbind(df, tmp)
+    }
+  }
+  else if ( 
+    (length(findOverlaps(Gene[i], TE_5000_longer, ignore.strand = TRUE)) != 0) & (length(findOverlaps(Gene[i], TE, ignore.strand = TRUE)) != 0))
+  {
+    over = findOverlaps(Gene[i], TE, ignore.strand = TRUE)
+    
+    for (j in 1:length(subjectHits(over))){
+      tmp = data.frame(gene_id = NA, TE_id = NA, Element = NA, percent = NA, chromatin = NA, status = NA)
+      tmp$gene_id[1] = Gene[i]$gene_id
+      tmp$status[1] = 'TEs inside a gene'
+      tmp$Element[1] = TE[subjectHits(over)[j]]$Element
+      tmp$percent[1] = TE[subjectHits(over)[j]]$percent
+      tmp$chromatin[1] = TE[subjectHits(over)[j]]$chromatin
+      tmp$TE_id[1] = TE[subjectHits(over)[j]]$id
+      df = rbind(df, tmp)
+    }
+  }
+  #End TE in flanks
+  if (i %% 1000 == 0){
+  print(i)
+}
+}
+
+df = df[complete.cases(df$gene_id),]
+
+length(unique(df$gene_id[df$status == 'TEs in flanks']))
+length(unique(df$gene_id[df$status == 'TEs inside a gene']))
+length(unique(df$TE_id[df$status == 'TEs in flanks']))
+length(unique(df$TE_id[df$status == 'TEs inside a gene']))
+write.csv(df, '~/2021_year/hypothesis/TEs_and_DE/P_strain_TEs_and_genes.csv', quote = F, row.names = F)
+
+
+###########################################################################################################
+#Part 2. Genes in 9 and their relationships with TEs:
+
+Nine <- readxl::read_xlsx('/mnt/raid/pro_milka/2021_year/Teflon_insertions/assTEv1_9_insertions_final.xlsx')
+MB <- GRanges(Nine$Chromosome, IRanges(Nine$Begin, Nine$End), 
+              strand = Nine$Strand, Element = Nine$Element, id = Nine$id, percent = Nine$`% of canonical copy`, chromatin = Nine$Chromatin)
+MB_5000_longer = MB
+start(MB_5000_longer) = start(MB) - 5000
+end(MB_5000_longer) = end(MB) + 5000
+
+
+an_9 <- rtracklayer::import('/mnt/raid/alexr/genome.annotation/transfer.all/9/recursive_round_1.gtf')
+an_9 <- as.data.frame(an_9)
+an_9 <- an_9[,c('seqnames', 'start', 'end', 'strand', 'type', 'gene_id')]
+tmp <- rtracklayer::import('/mnt/raid/alexr/genome.annotation/transfer.all/9/recursive_round_2.gtf')
+tmp <- as.data.frame(tmp)
+tmp <- tmp[,c('seqnames', 'start', 'end', 'strand', 'type', 'gene_id')]
+an_9 <- rbind(an_9, tmp)
+tmp <- rtracklayer::import('/mnt/raid/alexr/genome.annotation/transfer.all/9/recursive_round_3.gtf')
+tmp <- as.data.frame(tmp)
+tmp <- tmp[,c('seqnames', 'start', 'end', 'strand', 'type', 'gene_id')]
+an_9 <- rbind(an_9, tmp)
+tmp <- rtracklayer::import('/mnt/raid/alexr/genome.annotation/transfer.all/9/recursive_round_4.gtf')
+tmp <- as.data.frame(tmp)
+tmp <- tmp[,c('seqnames', 'start', 'end', 'strand', 'type', 'gene_id')]
+an_9 <- rbind(an_9, tmp)
+tmp <- rtracklayer::import('/mnt/raid/alexr/genome.annotation/transfer.all/9/recursive_round_5.gtf')
+tmp <- as.data.frame(tmp)
+tmp <- tmp[,c('seqnames', 'start', 'end', 'strand', 'type', 'gene_id')]
+an_9 <- rbind(an_9, tmp)
+tmp <- rtracklayer::import('/mnt/raid/alexr/genome.annotation/transfer.all/9/recursive_round_8.gtf')
+tmp <- as.data.frame(tmp)
+tmp <- tmp[,c('seqnames', 'start', 'end', 'strand', 'type', 'gene_id')]
+an_9 <- rbind(an_9, tmp)
+an_9$seqnames <- unlist(lapply(strsplit(as.character(an_9$seqnames), ';'), function(x)x[1])) 
+an_9
+
+an_9 <- GRanges(seqnames = an_9$seqnames, strand = an_9$strand, 
+                ranges = IRanges(start = an_9$start, end = an_9$end), type = an_9$type, gene_id = an_9$gene_id)
+an_9 <- unique(an_9)
+an_9 <- an_9[an_9$type == 'gene']
+
+df = data.frame(gene_id = NA, TE_id = NA, Element = NA, percent = NA, chromatin = NA, status = NA)
+
+for (i in 1:length(an_9)){
+  #TE in flanks for a particular Gene, an_9[i];
+  if ( 
+    (length(findOverlaps(an_9[i], MB_5000_longer, ignore.strand = TRUE)) != 0) & (length(findOverlaps(an_9[i], MB, ignore.strand = TRUE)) == 0))
+  {
+    over = findOverlaps(an_9[i], MB_5000_longer, ignore.strand = TRUE)
+    
+    for (j in 1:length(subjectHits(over))){
+      tmp = data.frame(gene_id = NA, TE_id = NA, Element = NA, percent = NA, chromatin = NA, status = NA)
+      tmp$gene_id[1] = an_9[i]$gene_id
+      tmp$status[1] = 'TEs in flanks'
+      tmp$Element[1] = MB_5000_longer[subjectHits(over)[j]]$Element
+      tmp$percent[1] = MB_5000_longer[subjectHits(over)[j]]$percent
+      tmp$chromatin[1] = MB_5000_longer[subjectHits(over)[j]]$chromatin
+      tmp$TE_id[1] = MB_5000_longer[subjectHits(over)[j]]$id
+      df = rbind(df, tmp)
+    }
+  }
+  else if ( 
+    (length(findOverlaps(an_9[i], MB_5000_longer, ignore.strand = TRUE)) != 0) & (length(findOverlaps(an_9[i], MB, ignore.strand = TRUE)) != 0))
+  {
+    over = findOverlaps(an_9[i], MB, ignore.strand = TRUE)
+    
+    for (j in 1:length(subjectHits(over))){
+      tmp = data.frame(gene_id = NA, TE_id = NA, Element = NA, percent = NA, chromatin = NA, status = NA)
+      tmp$gene_id[1] = an_9[i]$gene_id
+      tmp$status[1] = 'TEs inside a gene'
+      tmp$Element[1] = MB[subjectHits(over)[j]]$Element
+      tmp$percent[1] = MB[subjectHits(over)[j]]$percent
+      tmp$chromatin[1] = MB[subjectHits(over)[j]]$chromatin
+      tmp$TE_id[1] = MB[subjectHits(over)[j]]$id
+      df = rbind(df, tmp)
+    }
+  }
+  #End TE in flanks
+  if (i %% 1000 == 0){
+    print(i)
+  }
+}
+
+df = df[complete.cases(df$gene_id),]
+
+length(unique(df$gene_id[df$status == 'TEs in flanks']))
+length(unique(df$gene_id[df$status == 'TEs inside a gene']))
+length(unique(df$TE_id[df$status == 'TEs in flanks']))
+length(unique(df$TE_id[df$status == 'TEs inside a gene']))
+write.csv(df, '~/2021_year/hypothesis/TEs_and_DE/M_strain_TEs_and_genes.csv', quote = F, row.names = F)
+
+
+###########################################################################################################
+#Part 3. Summary table.
+P = read.csv('~/2021_year/hypothesis/TEs_and_DE/P_strain_TEs_and_genes.csv', header = TRUE)
+M = read.csv('~/2021_year/hypothesis/TEs_and_DE/M_strain_TEs_and_genes.csv', header = TRUE)
+
+
+############################################################################################################
+###########################################################################################################
+
+
+
+
+
+
+########################3
+
+table(unique(P$gene_id) %in% rownames(expressed_and_passed_F2))
+table(unique(M$gene_id) %in% rownames(expressed_and_passed_F2))
+
+
+
+annotation_Sasha <- rtracklayer::import('/mnt/raid/alexr/genome.annotation/FINAL/Dvir_160_liftoff_recursive.gtf')
+Gene <- annotation_Sasha[annotation_Sasha$type == 'gene']
+Gene_F0 <- Gene[Gene$gene_id %in% rownames(res2),]
+
+nonode = Gene_F0[!(Gene_F0$gene_id %in% P$gene_id) & !(Gene_F0$gene_id %in% M$gene_id) & Gene_F0$gene_id %in% rownames(expressed_and_passed)]$gene_id
+nonoNODE = Gene_F0[!(Gene_F0$gene_id %in% P$gene_id) & !(Gene_F0$gene_id %in% M$gene_id) & !Gene_F0$gene_id %in% rownames(expressed_and_passed)]$gene_id
+yesnode = Gene_F0[(Gene_F0$gene_id %in% P$gene_id) & !(Gene_F0$gene_id %in% M$gene_id) & Gene_F0$gene_id %in% rownames(expressed_and_passed)]$gene_id
+yesnoNODE = Gene_F0[(Gene_F0$gene_id %in% P$gene_id) & !(Gene_F0$gene_id %in% M$gene_id) & !Gene_F0$gene_id %in% rownames(expressed_and_passed)]$gene_id
+noyesde = Gene_F0[!(Gene_F0$gene_id %in% P$gene_id) & (Gene_F0$gene_id %in% M$gene_id) & Gene_F0$gene_id %in% rownames(expressed_and_passed)]$gene_id
+noyesNODE = Gene_F0[!(Gene_F0$gene_id %in% P$gene_id) & (Gene_F0$gene_id %in% M$gene_id) & !Gene_F0$gene_id %in% rownames(expressed_and_passed)]$gene_id
+yesyesde = Gene_F0[(Gene_F0$gene_id %in% P$gene_id) & (Gene_F0$gene_id %in% M$gene_id) & Gene_F0$gene_id %in% rownames(expressed_and_passed)]$gene_id
+yesyesNODE = Gene_F0[(Gene_F0$gene_id %in% P$gene_id) & (Gene_F0$gene_id %in% M$gene_id) & !Gene_F0$gene_id %in% rownames(expressed_and_passed)]$gene_id
+
+
+Gene_F2 <- Gene[Gene$gene_id %in% rownames(resF2),]
+
+F2_nonode = Gene_F2[!(Gene_F2$gene_id %in% P$gene_id) & !(Gene_F2$gene_id %in% M$gene_id) & Gene_F2$gene_id %in% rownames(expressed_and_passed_F2)]$gene_id
+length(intersect(F2_nonode, nonode))
+length(intersect(F2_nonode, nonoNODE))
+length(intersect(F2_nonode, yesyesNODE))
+
+F2_nonoNODE = Gene_F2[!(Gene_F2$gene_id %in% P$gene_id) & !(Gene_F2$gene_id %in% M$gene_id) & !Gene_F2$gene_id %in% rownames(expressed_and_passed_F2)]$gene_id
+length(intersect(F2_nonoNODE, nonoNODE))
+length(intersect(F2_nonoNODE, nonode))
+
+
+F2_yesnode =  Gene_F2[(Gene_F2$gene_id %in% P$gene_id) & !(Gene_F2$gene_id %in% M$gene_id) & Gene_F2$gene_id %in% rownames(expressed_and_passed_F2)]$gene_id
+length(intersect(F2_yesnode, yesnode))
+length(intersect(F2_yesnode, yesnoNODE))
+
+F2_yesnoNODE = Gene_F2[(Gene_F2$gene_id %in% P$gene_id) & !(Gene_F2$gene_id %in% M$gene_id) & !Gene_F2$gene_id %in% rownames(expressed_and_passed_F2)]$gene_id
+length(intersect(F2_yesnoNODE, yesnoNODE))
+length(intersect(F2_yesnoNODE, yesnode))
+
+F2_yesyesde = Gene_F2[(Gene_F2$gene_id %in% P$gene_id) & (Gene_F2$gene_id %in% M$gene_id) & Gene_F2$gene_id %in% rownames(expressed_and_passed_F2)]$gene_id
+length(intersect(F2_yesyesde, yesyesde))
+length(intersect(F2_yesyesde, yesyesNODE))
+
+F2_yesyesNODE = Gene_F2[(Gene_F2$gene_id %in% P$gene_id) & (Gene_F2$gene_id %in% M$gene_id) & !Gene_F2$gene_id %in% rownames(expressed_and_passed_F2)]$gene_id
+length(intersect(F2_yesyesNODE, yesyesNODE))
+length(intersect(F2_yesyesNODE, yesyesde))
+
+
+
+
+
+
+
+table(Gene_F0[!(Gene_F0$gene_id %in% P$gene_id) & !(Gene_F0$gene_id %in% M$gene_id)]$gene_id %in% rownames(expressed_and_passed))
+table(Gene_F0[(Gene_F0$gene_id %in% P$gene_id) & !(Gene_F0$gene_id %in% M$gene_id)]$gene_id %in% rownames(expressed_and_passed))
+table(Gene_F0[!(Gene_F0$gene_id %in% P$gene_id) & (Gene_F0$gene_id %in% M$gene_id)]$gene_id %in% rownames(expressed_and_passed))
+table(Gene_F0[(Gene_F0$gene_id %in% P$gene_id) & (Gene_F0$gene_id %in% M$gene_id)]$gene_id %in% rownames(expressed_and_passed))
+
+
+Gene_F2 <- Gene[Gene$gene_id %in% rownames(resF2),]
+
+table(Gene_F2[!(Gene_F2$gene_id %in% P$gene_id) & !(Gene_F2$gene_id %in% M$gene_id)]$gene_id %in% rownames(expressed_and_passed_F2))
+table(Gene_F2[(Gene_F2$gene_id %in% P$gene_id) & !(Gene_F2$gene_id %in% M$gene_id)]$gene_id %in% rownames(expressed_and_passed_F2))
+table(Gene_F2[!(Gene_F2$gene_id %in% P$gene_id) & (Gene_F2$gene_id %in% M$gene_id)]$gene_id %in% rownames(expressed_and_passed_F2))
+table(Gene_F2[(Gene_F2$gene_id %in% P$gene_id) & (Gene_F2$gene_id %in% M$gene_id)]$gene_id %in% rownames(expressed_and_passed_F2))
+
+
+
+
+
+
+
+
+
+
+
+
+
+length(intersect(
+  Gene_F2[!(Gene_F2$gene_id %in% P$gene_id) & !(Gene_F2$gene_id %in% M$gene_id) & (Gene_F2$gene_id %in% rownames(expressed_and_passed_F2))]$gene_id, 
+                 Gene_F0[!(Gene_F0$gene_id %in% P$gene_id) & !(Gene_F0$gene_id %in% M$gene_id) & (Gene_F0$gene_id %in% rownames(expressed_and_passed))]$gene_id
+                 ))
+
+
+length(intersect(
+  Gene_F2[!(Gene_F2$gene_id %in% P$gene_id) & !(Gene_F2$gene_id %in% M$gene_id) & (Gene_F2$gene_id %in% rownames(expressed_and_passed_F2))]$gene_id, 
+  Gene_F0[!(Gene_F0$gene_id %in% P$gene_id) & !(Gene_F0$gene_id %in% M$gene_id) & !(Gene_F0$gene_id %in% rownames(expressed_and_passed))]$gene_id
+))
+
+
+length(intersect(
+  Gene_F2[!(Gene_F2$gene_id %in% P$gene_id) & !(Gene_F2$gene_id %in% M$gene_id) & !(Gene_F2$gene_id %in% rownames(expressed_and_passed_F2))]$gene_id, 
+  Gene_F0[!(Gene_F0$gene_id %in% P$gene_id) & !(Gene_F0$gene_id %in% M$gene_id) & (Gene_F0$gene_id %in% rownames(expressed_and_passed))]$gene_id
+))
+
+
+
+Gene_F0[!(Gene_F0$gene_id %in% P$gene_id) & !(Gene_F0$gene_id %in% M$gene_id)]$gene_id
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#Influence <- intersect(Gene[Gene$TE_close != 'NO TEs',]$gene_id, an_9[an_9$relationships_with_TEs == 'NO TEs',]$gene_id)
+#Influence
+#Influence <- Influence[Influence %in% rownames(res2)]
+#table(Influence %in% rownames(expressed_and_passed))
+#Without_inf <- res2[!rownames(res2) %in% Influence,]
+#nrow(Without_inf) 
+#table(rownames(Without_inf) %in% rownames(expressed_and_passed))
+#mat = matrix(c(100, 47, 3180, 3656), ncol = 2)
+#fisher.test(mat)
+#Как экспрессируются эти гены в 9 и 160?
+#DE in asymmetric group:
+#final <- data.frame(gene_id = rownames(res2), log2FC = res2$log2FoldChange, Group_in_160 = NA, Group_in_9 = NA, padj = res2$padj)
+#Genes <- Genes[abs(Genes$log2FC) < 1,]
+#final <- final[final$padj < 0.05,]
+#final$Group_in_160 <- Gene[match(final$gene_id, Gene$gene_id),]$TE_close
+#final$Group_in_9 <- an_9[match(final$gene_id, an_9$gene_id),]$relationships_with_TEs
+#final$summary <- paste('In 160:', final$Group_in_160, '  In 9:', final$Group_in_9)
+#final$summary <- as.factor(final$summary)
+#final <- final[final$gene_id %in% Influence,]
+#ggplot(data = final, aes(x = summary, y = log2FC)) + geom_boxplot() + coord_flip() + theme_bw() + 
+#  geom_hline(yintercept = 0, linetype = 'dashed', col = 'red') + xlab('Groups of genes') +
+#  ggtitle('For each expressed and asymmetric in TEs environment gene\nfor 160 and 9 genomes with respect to the presence/absence\nof one of 44 TEs, logFC ref = 9 strain') +
+#  ylab('log2FC, ref = 9') + geom_jitter(size = 0.8)
+#table(final$summary)
+#vec1 <- final[final$summary == 'In 160: TEs in flanks   In 9: NO TEs',]$log2FC
+#vec2 <- final[final$summary == 'In 160: TE inside a gene   In 9: NO TEs',]$log2FC
+#length(vec2)
+#wilcox.test(vec1, vec2)
+
+
+
+###12 07
+genes_with_interest <- genes_with_interest[genes_with_interest %in% rownames(res2)]
+hist(res2[match(interest$gene_id, rownames(res2)),]$log2FoldChange)
+mean(res2[match(interest$gene_id, rownames(res2)),]$log2FoldChange)
+
+genes_interest <- GRanges(seqnames = seqnames(Gene[match(interest$gene_id, Gene$gene_id),]), 
+                    strand = strand(Gene[match(interest$gene_id, Gene$gene_id),]),
+                    ranges = IRanges(start(Gene[match(interest$gene_id, Gene$gene_id),]),
+                                     end(Gene[match(interest$gene_id, Gene$gene_id),])
+                                     ),
+                    log2FC = res2[match(interest$gene_id, rownames(res2)),]$log2FoldChange,
+                    gene_id = Gene[match(interest$gene_id, Gene$gene_id),]$gene_id,
+                    start_search = NA, end_search = NA)
+
+TE
+genes_interest
+near_TE = nearest(genes_interest, TE, ignore.strand = TRUE)
+near_TE
+
+for (i in 1:length(near_TE)){
+  a = start(genes_interest[i])
+  b = end(genes_interest[i])
+  c = start(TE[near_TE[i]])
+  d = end(TE[near_TE[i]])
+  
+  if (a > c){
+    genes_interest$start_search[i] <- d
+    genes_interest$end_search[i] <- a
+  }
+  if (a < c){
+    genes_interest$start_search[i] <- b
+    genes_interest$end_search[i] <- c
+  }
+  print(i)
+}
+
+genes_interest
+
+
+hist(genes_interest$end_search - genes_interest$start_search)
+
+align = GRanges(seqnames = seqnames(genes_interest), strand = strand(genes_interest), ranges = IRanges(start = genes_interest$start_search + 50,
+                                                                                                       end = genes_interest$end_search -50),
+                gene_id = genes_interest$gene_id)
+
+align
+write.csv(as.data.frame(align), '~/2021_year/hypothesis/TE_transcripts_occupyes_gene_transcripts/79_genomic_intervals_find_transcripts.csv', 
+          quote = F, row.names = F)
+
+
+
+#DE F2
+setwd('~/2021_year/raw_RNA_data_F2_JB/aln_to_ref/')
+library('DESeq2')
+featurecounts = read.table('Counts.out', header=TRUE, sep="\t", row.names=1 )
+featurecounts = featurecounts[,c(6, 7, 8, 9, 10, 11, 12, 13)]
+colData <- data.frame("replicate" = c("R1","R2","R3","R4", "R1","R2","R3", "R4"), "treatment" = c("dys","dys", "dys","dys", "rec","rec", "rec", "rec"))
+attributes(colData)$row.names <- c("R1.dys","R2.dys","R3.dys", "R4.dys", "R1.rec","R2.rec", "R3.rec", "R4.rec")
+#analyze
+dds <- DESeqDataSetFromMatrix(countData = featurecounts, colData = colData, design = ~ replicate + treatment)
+dds$treatment <- relevel(dds$treatment, ref = "rec")
+dds$replicate <- relevel(dds$replicate, ref = "R1")
+keep50 <- rowMeans(counts(dds)) >= 50
+dds50 <- dds[keep50,]
+dds50 <- DESeq(dds50)
+resF2 <- results(dds50,contrast=c("treatment","dys","rec"))
+resF2 <- as.data.frame(resF2)
+expressed_and_passed_F2 <- resF2[resF2$padj < 0.05,]  
+
+Influence_F2 <- intersect(Gene[Gene$TE_close != 'NO TEs',]$gene_id, an_9[an_9$relationships_with_TEs == 'NO TEs',]$gene_id)
+Influence_F2 <- Influence_F2[Influence_F2 %in% rownames(resF2)]
+table(Influence %in% Influence_F2)
+
+table(Influence_F2 %in% rownames(expressed_and_passed_F2))
+
+Without_inf_F2 <- resF2[!rownames(resF2) %in% Influence_F2,]
+nrow(Without_inf_F2) 
+table(rownames(Without_inf_F2) %in% rownames(expressed_and_passed_F2))
+mat = matrix(c(53, 94, 1867, 4958), ncol = 2)
+fisher.test(mat, alternative = "two.sided")
+
+
+
+final <- data.frame(gene_id = rownames(resF2), log2FC = resF2$log2FoldChange, Group_in_160 = NA, Group_in_9 = NA, padj = resF2$padj)
+#Genes <- Genes[abs(Genes$log2FC) < 1,]
+final <- final[final$padj < 0.05,]
+
+final$Group_in_160 <- Gene[match(final$gene_id, Gene$gene_id),]$TE_close
+final$Group_in_9 <- an_9[match(final$gene_id, an_9$gene_id),]$relationships_with_TEs
+final$summary <- paste('In 160:', final$Group_in_160, '  In 9:', final$Group_in_9)
+final$summary <- as.factor(final$summary)
+final <- final[final$gene_id %in% Influence_F2,]
+
+ggplot(data = final, aes(x = summary, y = log2FC)) + geom_boxplot() + coord_flip() + theme_bw() + 
+  geom_hline(yintercept = 0, linetype = 'dashed', col = 'red') + xlab('Groups of genes') +
+  ggtitle('For each expressed and\nasymmetric in TEs environment gene\nfor 160x9 and 9x160 with respect to the\npresence/absence of one of 44 TEs,\nlogFC ref = rec') +
+  ylab('log2FC, ref = rec') + geom_jitter(size = 0.8)
+
+table(final$summary)
+View(as.data.frame(final))
+nrow(final)
+27 + 26
+
+write.csv(as.data.frame(final), 'Genes_with_asymmetry_DE_in_F2_53genes_check_piRNA_around.csv', quote = F, row.names = F)
+
+
+##################check_piRNA_F2, piRNA aligned to 160 судя по всему. 
+
+setwd('~/2021_year/TE_in_genomes_analysis/piRNA_insertions/')
+.unlist <- function (x){
+  ## do.call(c, ...) coerces factor to integer, which is undesired
+  x1 <- x[[1L]]
+  if (is.factor(x1)){
+    structure(unlist(x), class = "factor", levels = levels(x1))
+  } else {
+    do.call(c, x)
+  }
+}
+bam_to_df <- function(path){
+  bam <- scanBam(path)
+  bam_field <- names(bam[[1]])
+  list_bam <- lapply(bam_field, function(y) .unlist(lapply(bam, "[[", y)))
+  bam_df <- do.call("DataFrame", list_bam)
+  names(bam_df) <- bam_field
+  bam_df <- data.frame(bam_df)
+  bam_df$type <- ifelse(bam_df$qwidth == 21 | bam_df$qwidth == 22, 'siRNA', 
+                        ifelse((bam_df$qwidth >= 23 & bam_df$qwidth <= 30), 'piRNA', 'smth'))
+  bam_df <- bam_df[bam_df$flag != 4,]
+  return(bam_df)
+}
+
+
+bam_72 <- bam_to_df('SRR2096072.piRNA.fasta.__160.bam')
+bam_79 <- bam_to_df('SRR2096079.piRNA.fasta.__160.bam')
+bam_80 <- bam_to_df('SRR2096080.piRNA.fasta.__160.bam')
+bam_81 <- bam_to_df('SRR2096081.piRNA.fasta.__160.bam')
+
+piRNA_rec = GRanges(seqnames = bam_80$rname, strand = bam_80$strand, ranges = IRanges(start=bam_80$pos, width=bam_80$qwidth), type = bam_80$type)
+piRNA_dis = GRanges(seqnames = bam_72$rname, strand = bam_72$strand, ranges = IRanges(start=bam_72$pos, width=bam_72$qwidth), type = bam_72$type)
+piRNA_rec_2 = GRanges(seqnames = bam_81$rname, strand = bam_81$strand, ranges = IRanges(start=bam_81$pos, width=bam_81$qwidth), type = bam_81$type)
+piRNA_dis_2 = GRanges(seqnames = bam_79$rname, strand = bam_79$strand, ranges = IRanges(start=bam_79$pos, width=bam_79$qwidth), type = bam_79$type)
+
+#Мь пиРНК к генам по разному наследуется?
+Annotation <- rtracklayer::import('/mnt/raid/alexr/genome.annotation/FINAL/Dvir_160_liftoff_recursive.gtf')
+Annotation <- Annotation[Annotation$type == 'gene',]
+Annotation$dys <- NA
+Annotation$rec <- NA
+
+for (i in 1:length(Annotation)){
+  Annotation$dys[i] = countOverlaps(Annotation[i], piRNA_dis)/length(piRNA_dis) + countOverlaps(Annotation[i], piRNA_dis_2)/length(piRNA_dis_2)
+  Annotation$rec[i] = countOverlaps(Annotation[i], piRNA_rec)/length(piRNA_rec) + countOverlaps(Annotation[i], piRNA_rec_2)/length(piRNA_rec_2)
+  if (i %% 1000 == 0){
+    print(i)
+  }
+}
+
+table(Annotation$dys == 0)
+table(Annotation$rec == 0)
+GENES_with_difference_in_pIRNA <- Annotation[Annotation$dys == 0 & Annotation$rec != 0 | Annotation$dys != 0 & Annotation$rec == 0,]
+table(GENES_with_difference_in_pIRNA$gene_id %in% rownames(expressed_and_passed_F2))
+
+Genes_the_same_piRNA <- Annotation[!Annotation$gene_id %in% GENES_with_difference_in_pIRNA$gene_id,]
+table(Genes_the_same_piRNA$gene_id %in% rownames(expressed_and_passed_F2))
+mat = matrix(c(391, 2946, 1529, 10171), ncol = 2)
+fisher.test(mat, alternative = "two.sided")
+
+check_DE_with_piRNAasym <- data.frame(gene_id = GENES_with_difference_in_pIRNA$gene_id[GENES_with_difference_in_pIRNA$gene_id %in% rownames(expressed_and_passed_F2)],
+                                      dys = GENES_with_difference_in_pIRNA$dys[GENES_with_difference_in_pIRNA$gene_id %in% rownames(expressed_and_passed_F2)],
+                                      rec = GENES_with_difference_in_pIRNA$rec[GENES_with_difference_in_pIRNA$gene_id %in% rownames(expressed_and_passed_F2)])
+check_DE_with_piRNAasym$logFC = expressed_and_passed_F2[match(check_DE_with_piRNAasym$gene_id, rownames(expressed_and_passed_F2)),]$log2FoldChange
+check_DE_with_piRNAasym$FC <- ((check_DE_with_piRNAasym$dys + 0.000000000000000000000001) / (check_DE_with_piRNAasym$rec + 0.000000000000000000000001))
+
+ggplot(data = check_DE_with_piRNAasym[check_DE_with_piRNAasym$gene_id %in% final$gene_id,], aes(x = FC, y = logFC)) + geom_point()
+table(check_DE_with_piRNAasym$logFC > 0)
+hist(check_DE_with_piRNAasym[check_DE_with_piRNAasym$dys == 0,]$logFC)
+hist(check_DE_with_piRNAasym[check_DE_with_piRNAasym$rec == 0,]$logFC)
+
+
+check_DE_with_piRNAasym[check_DE_with_piRNAasym$gene_id %in% final$gene_id,]
+
+table(Annotation[Annotation$gene_id %in% final$gene_id,]$rec)
+
+
+Annotation_long <- rtracklayer::import('/mnt/raid/alexr/genome.annotation/FINAL/Dvir_160_liftoff_recursive.gtf')
+Annotation_long <- Annotation_long[Annotation_long$type == 'gene',]
+Annotation_long$dys <- NA
+Annotation_long$rec <- NA
+
+for (i in 1:length(Annotation_long)){
+  Annotation_long$dys[i] = countOverlaps(Annotation_long[i], piRNA_dis)/length(piRNA_dis) + countOverlaps(Annotation_long[i], piRNA_dis_2)/length(piRNA_dis_2)
+  Annotation_long$rec[i] = countOverlaps(Annotation_long[i], piRNA_rec)/length(piRNA_rec) + countOverlaps(Annotation_long[i], piRNA_rec_2)/length(piRNA_rec_2)
+  if (i %% 1000 == 0){
+    print(i)
+  }
+}
+
+
+
