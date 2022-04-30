@@ -1,0 +1,275 @@
+setwd('/mnt/raid/pro_milka/RNA_SEQ_LAB_GENOMES/small_RNAs/length_23_30/aln_to_TE_2mm')
+
+####
+
+.unlist <- function (x){
+  ## do.call(c, ...) coerces factor to integer, which is undesired
+  x1 <- x[[1L]]
+  if (is.factor(x1)){
+    structure(unlist(x), class = "factor", levels = levels(x1))
+  } else {
+    do.call(c, x)
+  }
+}
+bam_to_df <- function(path){
+  bam <- scanBam(path)
+  bam_field <- names(bam[[1]])
+  list_bam <- lapply(bam_field, function(y) .unlist(lapply(bam, "[[", y)))
+  bam_df <- do.call("DataFrame", list_bam)
+  names(bam_df) <- bam_field
+  bam_df <- data.frame(bam_df)
+  return(bam_df)
+}
+plotcoverage_upd = function(TE_name, TE_library_path, bam_path){
+  .unlist <- function (x){
+    ## do.call(c, ...) coerces factor to integer, which is undesired
+    x1 <- x[[1L]]
+    if (is.factor(x1)){
+      structure(unlist(x), class = "factor", levels = levels(x1))
+    } else {
+      do.call(c, x)
+    }
+  }
+  bam_to_df <- function(path){
+    bam <- scanBam(path)
+    bam_field <- names(bam[[1]])
+    list_bam <- lapply(bam_field, function(y) .unlist(lapply(bam, "[[", y)))
+    bam_df <- do.call("DataFrame", list_bam)
+    names(bam_df) <- bam_field
+    bam_df <- data.frame(bam_df)
+    return(bam_df)
+  }
+  TE_library = readDNAStringSet(TE_library_path)
+  TE_length = TE_library[TE_library@ranges@NAMES == TE_name,]@ranges@width
+  TE_coverage = data.frame(position = c(1:TE_length), sense = 0, antisense = 0)
+  #intervals = bam_to_df(bam_path)
+  intervals = bam_path
+  print('Bam file successfully downloaded. Number of hits at all:')
+  print(nrow(intervals))
+  intervals = intervals[intervals$rname == TE_name,]
+  print('Bam file successfully downloaded. Number of hits:')
+  print(nrow(intervals))
+  if (nrow(intervals) == 0){
+    plot = ggplot()
+    return(plot)
+  }
+  
+  for (i in 1:nrow(intervals)){
+    if (intervals$strand[i] == '+'){
+      TE_coverage$sense[c(intervals$pos[i]:intervals$pos[i]+intervals$qwidth[i]-1)] =
+        TE_coverage$sense[c(intervals$pos[i]:intervals$pos[i]+intervals$qwidth[i]-1)] + 1
+    }
+    else {
+      TE_coverage$antisense[c(intervals$pos[i]:intervals$pos[i]+intervals$qwidth[i]-1)] =
+        TE_coverage$antisense[c(intervals$pos[i]:intervals$pos[i]+intervals$qwidth[i]-1)] + 1
+    }
+    if ((i %% 1000) == 0){
+      print(paste(100*i/nrow(intervals), 'percent done'))
+    }
+  }
+  
+  TE_coverage_melted = data.frame(position = rep(TE_coverage$position, 2), reads = c(TE_coverage$sense,
+                                                                                     TE_coverage$antisense),
+                                  label = c(rep('sense', nrow(TE_coverage)),
+                                            rep('antisense', nrow(TE_coverage))))
+  TE_coverage_melted$reads = TE_coverage_melted$reads * 1000000 / nrow(intervals)
+  TE_coverage_melted$reads[TE_coverage_melted$label == 'antisense'] = -1 * TE_coverage_melted$reads[TE_coverage_melted$label == 'antisense']
+  
+  plot = ggplot(data = TE_coverage_melted, aes(x = position, y= reads, col = label)) + 
+    geom_line() + 
+    theme_classic() + 
+    scale_color_manual(values = c("deepskyblue2", "tomato")) +
+    ggtitle(TE_name) +
+    xlab('Genomic coordinate') +
+    ylab('Scaled coverage, RPM') +
+    labs(col = 'Strand:')
+  return(plot)
+}
+plot_signature = function(TE_name, TE_library_path, fasta_path){
+  setwd('/mnt/raid/pro_milka/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/ALL_THIS_STUFF/')
+  base = readDNAStringSet(TE_library_path)
+  TE = base[base@ranges@NAMES == TE_name]
+  writeXStringSet(TE, '/mnt/raid/pro_milka/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/ALL_THIS_STUFF/TE.fasta')
+  system(paste('bowtie-build /mnt/raid/pro_milka/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/ALL_THIS_STUFF/TE.fasta TE;
+         bowtie -f ', fasta_path, ' -v 0 --threads 64 --index /mnt/raid/pro_milka/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/ALL_THIS_STUFF/TE --sam > /mnt/raid/pro_milka/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/ALL_THIS_STUFF/align_without_flag.sam;
+         samtools view -h -F 4 /mnt/raid/pro_milka/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/ALL_THIS_STUFF/align_without_flag.sam > /mnt/raid/pro_milka/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/ALL_THIS_STUFF/result.sam;
+         python3 ~/soft/signature.py /mnt/raid/pro_milka/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/ALL_THIS_STUFF/result.sam 1 35 1 35 answer', sep =''), intern = F)
+  df = read.table('answer', header = TRUE)
+  system('rm /mnt/raid/pro_milka/Anopheles_part3/COMPARE_ME/align_to_TE_V0/F4_flag/ALL_THIS_STUFF/*', intern = F)
+  plot = ggplot(data = df, aes(x = overlap, y = z.score, fill = overlap_prob)) +
+    theme_classic() +
+    geom_bar(stat = 'identity') +
+    xlab('Overlap') +
+    ylab('Z-score') +
+    theme(text = element_text(size = 15), legend.position = "none")
+  return(plot)
+}
+
+TE_base = readDNAStringSet('~/2022_TE_base_160/TEs_CDS_base.fasta')
+TE_names = TE_base@ranges@NAMES
+bam_101N = bam_to_df('101N_to_base_v2m1.bam')
+bam_101M = bam_to_df('101M_to_base_v2m1.bam')
+bam_160 = bam_to_df('1160_to_base_v2m1.bam')
+
+
+for (i in 1:2){
+
+  coverage = plotcoverage_upd(TE_names[i],'~/2022_TE_base_160/TEs_CDS_base.fasta',
+                              bam_101N)
+  signature = plot_signature(TE_names[i], '~/2022_TE_base_160/TEs_CDS_base.fasta',
+                             '~/RNA_SEQ_LAB_GENOMES/small_RNAs/length_23_30/101N.fasta.fasta')
+  #bias = plot_bias(TE_names[i], 
+  #                 '~/Anopheles_part5/align_to_TE_snRNA_aligned_to_genome_V3/F4_flag/female_head_rep1_trimmed.fastq.sam.f4.bam.fasta.sam.f4.bam.fasta.sam.f4.bam.fasta.sam.F4.bam.fasta.sam.F4.bam')
+  
+  N_strain = arrangeGrob(coverage, signature, nrow = 1, top = paste('N strain', TE_names[i]))
+  g = grid.arrange(N_strain, nrow = 1)
+
+  #g = grid.arrange(fh1, fh2, fh3, ft1, ft2, ft3, mh1, mh2, mh3, mt1, mt2, mt3, nrow = 12)
+  
+  setwd('~/PICTURES_NIR/')
+  ggsave(paste(unlist(lapply(strsplit(TE_names[i], '#'), function(x)x[1])),'.pdf',sep=''), width = 7, height = 20, units = "cm", g)
+}
+
+
+plot_signature('Nausicaa#LTR/Gypsy',
+               '~/2022_TE_base_160/TEs_CDS_base.fasta',
+               '~/RNA_SEQ_LAB_GENOMES/small_RNAs/length_23_30/101N.fasta.fasta'
+               )
+
+
+#the same bam as in plot coverage
+#plot_bias = function(TE_name, bam_path){
+  bam_to_df <- function(path){
+    bam <- scanBam(path)
+    bam_field <- names(bam[[1]])
+    list_bam <- lapply(bam_field, function(y) .unlist(lapply(bam, "[[", y)))
+    bam_df <- do.call("DataFrame", list_bam)
+    names(bam_df) <- bam_field
+    bam_df <- data.frame(bam_df)
+    return(bam_df)
+  }
+  
+  take_ten = function(DNAstring){
+    rez = paste(unlist(strsplit(as.character(DNAstring),''))[1:10],collapse="")
+    return(rez) 
+  }
+  
+  intervals = bam_to_df(bam_path)
+  print('Bam file successfully downloaded. Number of hits at all:')
+  print(nrow(intervals))
+  intervals = intervals[intervals$rname == TE_name,]
+  print('Bam file successfully downloaded. Number of hits:')
+  print(nrow(intervals))
+  if (nrow(intervals) == 0){
+    plot = ggplot()
+    return(plot)
+  }
+  intervals_plus = intervals[intervals$strand == '+',]
+  intervals_minus = intervals[intervals$strand == '-',]
+  
+  if (nrow(intervals_plus) == 0){
+    plus = ggplot() + theme_void()
+  } else{
+    
+    intervals_plus$ten_letters = as.character(lapply(intervals_plus$seq, take_ten))
+    plus = ggplot() + geom_logo(intervals_plus$ten_letters) + theme_logo() + ggtitle('+ strand')
+  }
+  
+  if (nrow(intervals_minus) == 0){
+    minus = ggplot() + theme_void()
+  }
+  else{
+    intervals_minus$ten_letters = as.character(lapply(intervals_minus$seq, take_ten))
+    minus = ggplot() + geom_logo(intervals_minus$ten_letters) + theme_logo() + ggtitle('- strand')
+  }
+  
+  result = grid.arrange(plus, minus, nrow = 2)
+  return(result)
+}
+
+
+
+
+
+
+
+
+
+
+
+
+#coverage
+
+plotcoverage = function(TE_name, TE_library_path, bam_path){
+  .unlist <- function (x){
+    ## do.call(c, ...) coerces factor to integer, which is undesired
+    x1 <- x[[1L]]
+    if (is.factor(x1)){
+      structure(unlist(x), class = "factor", levels = levels(x1))
+    } else {
+      do.call(c, x)
+    }
+  }
+  bam_to_df <- function(path){
+    bam <- scanBam(path)
+    bam_field <- names(bam[[1]])
+    list_bam <- lapply(bam_field, function(y) .unlist(lapply(bam, "[[", y)))
+    bam_df <- do.call("DataFrame", list_bam)
+    names(bam_df) <- bam_field
+    bam_df <- data.frame(bam_df)
+    return(bam_df)
+  }
+  TE_library = readDNAStringSet(TE_library_path)
+  TE_length = TE_library[TE_library@ranges@NAMES == TE_name,]@ranges@width
+  TE_coverage = data.frame(position = c(1:TE_length), sense = 0, antisense = 0)
+  intervals = bam_to_df(bam_path)
+  print('Bam file successfully downloaded. Number of hits:')
+  print(nrow(intervals))
+  intervals = intervals[intervals$rname == TE_name,]
+  for (i in 1:nrow(intervals)){
+    if (intervals$strand[i] == '+'){
+      TE_coverage$sense[c(intervals$pos[i]:intervals$pos[i]+intervals$qwidth[i]-1)] =
+        TE_coverage$sense[c(intervals$pos[i]:intervals$pos[i]+intervals$qwidth[i]-1)] + 1
+    }
+    else {
+      TE_coverage$antisense[c(intervals$pos[i]:intervals$pos[i]+intervals$qwidth[i]-1)] =
+        TE_coverage$antisense[c(intervals$pos[i]:intervals$pos[i]+intervals$qwidth[i]-1)] + 1
+    }
+    if ((i %% 1000) == 0){
+      print(paste(100*i/nrow(intervals), 'percent done'))
+    }
+  }
+  
+  TE_coverage_melted = data.frame(position = rep(TE_coverage$position, 2), reads = c(TE_coverage$sense,
+                                                                                     TE_coverage$antisense),
+                                  label = c(rep('sense', nrow(TE_coverage)),
+                                            rep('antisense', nrow(TE_coverage))))
+  TE_coverage_melted$reads = TE_coverage_melted$reads / sum(TE_coverage_melted$reads)
+  TE_coverage_melted$reads[TE_coverage_melted$label == 'antisense'] = -1 * TE_coverage_melted$reads[TE_coverage_melted$label == 'antisense']
+  
+  plot = ggplot(data = TE_coverage_melted, aes(x = position, y= reads, col = label)) + 
+    geom_line() + 
+    theme_bw() + 
+    scale_color_manual(values = c("deepskyblue2", "tomato")) +
+    ggtitle(TE_name) +
+    xlab('Genomic coordinate') +
+    ylab('Scaled coverage') +
+    labs(col = 'Strand:')
+  return(plot)
+}
+
+base = readDNAStringSet('~/2022_TE_base_160/TEs_CDS_base.fasta')
+base@ranges@NAMES
+
+#example
+plotcoverage('Nausicaa#LTR/Gypsy',
+             '~/2022_TE_base_160/TEs_CDS_base.fasta',
+             '101N_to_base_v2m1.bam')
+
+library(gridExtra)
+gridExtra::grid.arrange(arrangeGrob(mh1, mh2, mh3, mt1, mt2, mt3, fh1, fh2, fh3, ft1, ft2, ft3, ncol = 3),
+                        shared_legend,
+                        nrow = 2,
+                        widths = c(10, 4), heights = c(15, 0.2))
+
+
